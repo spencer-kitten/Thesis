@@ -22,11 +22,12 @@ class Merchant_Ship:
     '''Improved class to store Merchant Ship data'''
 
     
-    def __init__(self, name, loc,course = 90, speed=16):
+    def __init__(self, name, loc, time_delay,course = 90, speed=16):
         self.name = name
         self.loc = loc
         self.spd = speed
         self.crs = course
+        self.td  = time_delay
         if self.name[0] == "T":
             self.status = 'Target'
         else:
@@ -60,13 +61,18 @@ class Merchant_Ship:
     def update_position(self):
         '''Geometric Hops'''
         
-        radians = self.bearing_to_rads(self.crs)
-        d = self.spd*(1/3600)
+        if self.td > 0:
+            self.td = self.td - 1/(24)
+            
+        else:
         
-        updated_lat = self.loc.lat + math.sin(radians)*d
-        updated_lon = self.loc.lon + math.cos(radians)*d
+            radians = self.bearing_to_rads(self.crs)
+            d = self.spd*(1/3600)
         
-        self.loc = Coord(updated_lat,updated_lon)
+            updated_lat = self.loc.lat + math.sin(radians)*d
+            updated_lon = self.loc.lon + math.cos(radians)*d
+        
+            self.loc = Coord(updated_lat,updated_lon)
        
 
 

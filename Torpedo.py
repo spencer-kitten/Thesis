@@ -21,7 +21,7 @@ class Torpedo:
     '''Improved class to store Merchant Ship data'''
 
     
-    def __init__(self, name, loc,course = 90, speed=16):
+    def __init__(self, name, loc,course, speed):
         self.name = name
         self.loc = loc
         self.spd = speed

@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 
 
 from Coord import *
+from Torpedo import *
 
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
@@ -24,10 +25,18 @@ class Submarine:
         self.crs = crs
         self.spd = spd
         self.depth = depth
+        # detections and detected before split to allow prioritization by the submarine
         self.detections = []
         self.detected_before = []
-        self.timer = 0
+        # allows time between maneuvers 
+        self.ranging_timer = 0
+        # Forces submarine to return to center postion to resume search if reach boundry 
+        self.return_fun = False
+        # Uniform intermaneuver times 
         self.inter_maneuver = 2 + rand.random()*5
+        self.tracked = []
+        self.torpedoes = []
+        self.torp_timer = 50
         
     def update_position(self):
         '''Geometric Hops'''
@@ -36,53 +45,107 @@ class Submarine:
         d = self.spd*(1/3600)
         
         # Logic of Submarine Movment
-        if len(self.detections) > 0:
-            
+        if (len(self.detections) > 0) & (self.return_fun == False):
+            # At least on target detected, submarine not near left edge of waterspace 
             
             if self.loc.dist_to(self.detections[0].loc) > 20000/2000:
+                # Within detection range, not within tracking range 
+                # Speed up to close distance 
                 self.crs = self.loc.bearing(self.detections[0].loc)
                 self.spd = 33
                
-            elif (self.timer <= 0) and (self.loc.dist_to(self.detections[0].loc) <= 20000/2000):
-                
+            elif (self.ranging_timer <= 0) and (self.loc.dist_to(self.detections[0].loc) <= 20000/2000):
+                # Within tracking range 
                 self.spd = 16
                 
                 if self.detections[0].status != 'Target':
+                    # Determine if target or neutral 
                     self.detections.pop(0)
                     self.crs = round(rand.random())*180
                     
+                elif (self.detections[0].status == 'Target'):
+                    self.torp_timer -= 1
+                    
+                if self.torp_timer <= 0:
+                    self.torp_timer = 50
+                    self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
+                    
                 if len(self.detections) > 0:
+                    # If Contact is of "target" type, begin tracking
+                    
+                    # Store name 
+                    if self.detections[0].name not in self.tracked:
+                        self.tracked.append(self.detections[0].name)
+                        
                     if self.inter_maneuver <= 0:
                         
                         randomizing_factor = rand.random()
 
+                        # Maneuvers performed astern of target while in trail 
                         if (randomizing_factor < .5) and (self.detections[0].status == 'Target'):
                             self.crs = self.loc.bearing(self.detections[0].loc) + 90
-                            self.timer = (2 + 30*rand.random())*60
+                            self.ranging_timer = (2 + 30*rand.random())*60
                             self.inter_maneuver = 2 + rand.random()*5
 
                         elif (.5 <= randomizing_factor < 1) and (self.detections[0].status == 'Target'):
                             self.crs = self.loc.bearing(self.detections[0].loc) - 90
-                            self.timer = (2 + 30*rand.random())*60
+                            self.ranging_timer = (2 + 30*rand.random())*60
                             self.inter_maneuver = 2 + rand.random()*5
                     else:
                         self.inter_maneuver = self.inter_maneuver - 1
                         
-                 
-        if self.timer > 0:            
-            self.timer = self.timer - 1
+        elif (self.return_fun == True):
+            # Return to search position 
+            self.crs = 270
+            self.spd = 33
+            
+        if self.ranging_timer > 0: 
+            self.ranging_timer = self.ranging_timer - 1
             
             
-        
+        # Geometric hops
         updated_lat = self.loc.lat + math.sin(radians)*d
         updated_lon = self.loc.lon + math.cos(radians)*d
         
+        # Re-store location as Coord object in .loc
         self.loc = Coord(updated_lat,updated_lon)
         
+        # Prevent Submarine from leaving top or bottom of waterspace 
+        # Needs reflection modification 
         if self.loc.lat >= 100 - 40000/2000:
             self.crs = 180
         elif self.loc.lat <= 0 + 40000/2000:
             self.crs = 0
+        
+        # Prevent submarine from leaving waterspace 
+        if self.loc.lon >= 200 - 40000/2000:
+            self.return_fun = True
+            self.detections.pop(0)
+            self.crs = 270
+        elif (self.loc.lon >= 100) & (len(self.detections) == 0):
+            self.return_fun = True
+            self.crs = 270
+        elif (len(self.detections) != 0) & (self.return_fun == True):
+            self.return_fun = False
+            self.crs = rand.randint(0, 1)*180
+        elif (self.loc.lon < 100) & (self.return_fun == True):
+            self.return_fun = False
+            self.crs = rand.randint(0, 1)*180
+        
+        # Torpedo updating 
+        if len(self.torpedoes) > 0:
+            for torp in self.torpedoes:
+                if len(self.detections) > 0:
+                    torp.crs = self.loc.bearing(self.detections[0].loc)  
+                    dist = torp.loc.dist_to(self.detections[0].loc)
+                    if dist <= 2:
+                        torp.loc = Coord(1000,1000)
+                        torp.spd = 0
+                        self.torpedoes.remove(torp)
+                    elif dist >= 200:
+                        torp.loc = Coord(1000,1000)
+                        torp.spd = 0
+                        self.torpedoes.remove(torp)
         
     def ping(self, target_list):
         '''Verifies if any targets are within detection range'''
