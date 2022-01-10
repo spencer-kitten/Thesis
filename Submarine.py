@@ -37,6 +37,7 @@ class Submarine:
         self.tracked = []
         self.torpedoes = []
         self.torp_timer = 50
+        self.tracking_timer = 0
         
     def update_position(self):
         '''Geometric Hops'''
@@ -47,6 +48,7 @@ class Submarine:
         # Logic of Submarine Movment
         if (len(self.detections) > 0) & (self.return_fun == False):
             # At least on target detected, submarine not near left edge of waterspace 
+            self.tracking_timer += 1
             
             if self.loc.dist_to(self.detections[0].loc) > 20000/2000:
                 # Within detection range, not within tracking range 
@@ -93,6 +95,7 @@ class Submarine:
                             self.inter_maneuver = 2 + rand.random()*5
                     else:
                         self.inter_maneuver = self.inter_maneuver - 1
+            
                         
         elif (self.return_fun == True):
             # Return to search position 
@@ -141,10 +144,12 @@ class Submarine:
                     if dist <= 2:
                         torp.loc = Coord(1000,1000)
                         torp.spd = 0
+                        torp.alive = False
                         self.torpedoes.remove(torp)
                     elif dist >= 200:
                         torp.loc = Coord(1000,1000)
                         torp.spd = 0
+                        torp.alive = False
                         self.torpedoes.remove(torp)
         
     def ping(self, target_list):

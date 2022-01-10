@@ -72,18 +72,6 @@ class Coord:
             
         if crs < 90:
             crs = (math.pi/180)*(90-crs)
-        #elif crs == 90:
-            #crs = (math.pi/180)*0
-        #elif crs >90 and crs < 180:
-            #crs = (math.pi/180)*(360 - (crs - 90))
-        #elif crs == 180:
-            #crs = (math.pi/180)*(270)
-        #elif crs > 180 and crs < 270:
-            #crs = (math.pi/180)*(180 + 90 - (crs - 180))
-        #elif crs == 270:
-            #crs = (math.pi/180)*180
-        #elif crs > 270 and crs < 360:
-            #crs = (math.pi/180)*(360 - crs + 90)
         else:
             crs = (math.pi/180)*(450 - crs)
     

@@ -26,6 +26,7 @@ class Torpedo:
         self.loc = loc
         self.spd = speed
         self.crs = course
+        self.alive = True
         
     def bearing_to_rads(self, crs):
         '''Converts nautical bearing to unit circle radians'''
@@ -34,20 +35,8 @@ class Torpedo:
             
         if crs < 90:
             crs = (math.pi/180)*(90-crs)
-        elif crs == 90:
-            crs = (math.pi/180)*0
-        elif crs >90 and crs < 180:
-            crs = (math.pi/180)*(360 - (crs - 90))
-        elif crs == 180:
-            crs = (math.pi/180)*(270)
-        elif crs > 180 and crs < 270:
-            crs = (math.pi/180)*(180 + 90 - (crs - 180))
-        elif crs == 270:
-            crs = (math.pi/180)*180
-        elif crs > 270 and crs < 360:
-            crs = (math.pi/180)*(360 - crs + 90)
         else:
-            crs = (math.pi/180)*90
+            crs = (math.pi/180)*(450 - crs)
     
         return crs
 
@@ -62,6 +51,12 @@ class Torpedo:
         updated_lon = self.loc.lon + math.cos(radians)*d
         
         self.loc = Coord(updated_lat,updated_lon)
+        
+        if self.loc.lat >= 10000:
+            self.alive = False
+            
+        elif self.loc.lon >= 200:
+            self.loc.lat = 10000
        
 
 

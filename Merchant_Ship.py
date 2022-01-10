@@ -28,6 +28,7 @@ class Merchant_Ship:
         self.spd = speed
         self.crs = course
         self.td  = time_delay
+        self.alive = True
         if self.name[0] == "T":
             self.status = 'Target'
         else:
@@ -40,20 +41,8 @@ class Merchant_Ship:
             
         if crs < 90:
             crs = (math.pi/180)*(90-crs)
-        elif crs == 90:
-            crs = (math.pi/180)*0
-        elif crs >90 and crs < 180:
-            crs = (math.pi/180)*(360 - (crs - 90))
-        elif crs == 180:
-            crs = (math.pi/180)*(270)
-        elif crs > 180 and crs < 270:
-            crs = (math.pi/180)*(180 + 90 - (crs - 180))
-        elif crs == 270:
-            crs = (math.pi/180)*180
-        elif crs > 270 and crs < 360:
-            crs = (math.pi/180)*(360 - crs + 90)
         else:
-            crs = (math.pi/180)*90
+            crs = (math.pi/180)*(450 - crs)
     
         return crs
 
@@ -64,7 +53,7 @@ class Merchant_Ship:
         if self.td > 0:
             self.td = self.td - 1/(24)
             
-        else:
+        elif (self.loc.lat <= 10000):
         
             radians = self.bearing_to_rads(self.crs)
             d = self.spd*(1/3600)
@@ -73,6 +62,18 @@ class Merchant_Ship:
             updated_lon = self.loc.lon + math.cos(radians)*d
         
             self.loc = Coord(updated_lat,updated_lon)
+            
+        else:
+            self.alive = False
+            
+    def torpedo_check(self,other):
+        '''Verifies if self has been destroyed by torpedo.'''
+        
+        distance = self.loc.dist_to(other)
+        
+        if (distance < 2):
+            self.loc = Coord(10000,10000)
+        
        
 
 
