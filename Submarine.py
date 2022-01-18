@@ -20,7 +20,7 @@ from Torpedo import *
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
     
-    def __init__(self,loc,crs = rand.randrange(0, 360),spd = 3, depth = 150):
+    def __init__(self,loc, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1):
         self.loc = loc
         self.crs = crs
         self.spd = spd
@@ -38,6 +38,7 @@ class Submarine:
         self.torpedoes = []
         self.torp_timer = 50
         self.tracking_timer = 0
+        self.indexer = index
         
     def update_position(self):
         '''Geometric Hops'''
@@ -58,7 +59,7 @@ class Submarine:
                
             elif (self.ranging_timer <= 0) and (self.loc.dist_to(self.detections[0].loc) <= 20000/2000):
                 # Within tracking range 
-                self.spd = 16
+                self.spd = 17
                 
                 if self.detections[0].status != 'Target':
                     # Determine if target or neutral 
@@ -85,14 +86,14 @@ class Submarine:
 
                         # Maneuvers performed astern of target while in trail 
                         if (randomizing_factor < .5) and (self.detections[0].status == 'Target'):
-                            self.crs = self.loc.bearing(self.detections[0].loc) + 90
-                            self.ranging_timer = (2 + 30*rand.random())*60
-                            self.inter_maneuver = 2 + rand.random()*5
+                            self.crs = self.loc.bearing(self.detections[0].loc) + 30
+                            self.ranging_timer = (2 + 30*rand.random())*500
+                            self.inter_maneuver = 2 + rand.random()*500
 
                         elif (.5 <= randomizing_factor < 1) and (self.detections[0].status == 'Target'):
-                            self.crs = self.loc.bearing(self.detections[0].loc) - 90
-                            self.ranging_timer = (2 + 30*rand.random())*60
-                            self.inter_maneuver = 2 + rand.random()*5
+                            self.crs = self.loc.bearing(self.detections[0].loc) - 30
+                            self.ranging_timer = (2 + 30*rand.random())*500
+                            self.inter_maneuver = 2 + rand.random()*500
                     else:
                         self.inter_maneuver = self.inter_maneuver - 1
             
@@ -121,19 +122,20 @@ class Submarine:
             self.crs = 0
         
         # Prevent submarine from leaving waterspace 
-        if self.loc.lon >= 200 - 40000/2000:
+        if self.loc.lon >= 200 + (self.indexer - 1)*200 - 40000/2000:
             self.return_fun = True
             self.detections.pop(0)
             self.crs = 270
-        elif (self.loc.lon >= 100) & (len(self.detections) == 0):
+        elif (self.loc.lon >= 100 + (self.indexer - 1)*200) & (len(self.detections) == 0):
             self.return_fun = True
             self.crs = 270
         elif (len(self.detections) != 0) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
-        elif (self.loc.lon < 100) & (self.return_fun == True):
+        elif (self.loc.lon < 90 + (self.indexer - 1)*200) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
+
         
         # Torpedo updating 
         if len(self.torpedoes) > 0:

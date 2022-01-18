@@ -62,14 +62,16 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
         
     # Submarine builder
     Submarines = []
+    indexer = 1
     for i in sub_names:
-        location = Coord(random.uniform(0,100),100)
+        location = Coord(random.uniform(0,100),100 + 200*(indexer-1))
         course = round(random.random())*180
-        Submarines.append(Submarine(location,crs = course, spd = speed_sub))
+        Submarines.append(Submarine(location,crs = course, spd = speed_sub, index = indexer))
+        indexer += 1
         
     return Targets,Merchants,Submarines
 
-def contact_picture(tgt_list,merch_list,sub_list,torp_list):
+def contact_picture(tgt_list,merch_list,sub_list,torp_list,plot_lim = 1):
     '''Plots contact picture'''
     
     # Targets 
@@ -88,12 +90,14 @@ def contact_picture(tgt_list,merch_list,sub_list,torp_list):
     for item_p in torp_list:
         plt.plot(item_p.loc.lon,item_p.loc.lat, 'yo') 
 
-    plt.xlim(0,200)
+    plt.xlim(0,200 + 200*(plot_lim - 1))
     plt.ylim(0,100)
+    #plt.axis('equal')
     
-def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = False):
+def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = False,seed = 10):
     #Print RNG seed for output... be able to recreate 
     '''Performs one simulation of a submarine tracking event'''
+    random.seed(seed)
     
     # Generate enviroment objects
     Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub)
@@ -151,7 +155,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
         if plotter_index > 500:
             plotter_index = 0
             if plotter == True:
-                contact_picture(Targets,Merchants,Submarines,Torpedoes)
+                contact_picture(Targets,Merchants,Submarines,Torpedoes,len(Submarines))
                 if gif == True:
                     filename = f'{i}.png'
                     i += 1
