@@ -73,6 +73,7 @@ class Merchant_Ship:
         
         if (distance < 2):
             self.loc = Coord(10000,10000)
+            self.alive = False
         
        
 

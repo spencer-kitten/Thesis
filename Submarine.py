@@ -39,6 +39,7 @@ class Submarine:
         self.torp_timer = 50
         self.tracking_timer = 0
         self.indexer = index
+        self.kills = []
         
     def update_position(self):
         '''Geometric Hops'''
@@ -60,6 +61,7 @@ class Submarine:
             elif (self.ranging_timer <= 0) and (self.loc.dist_to(self.detections[0].loc) <= 20000/2000):
                 # Within tracking range 
                 self.spd = 17
+                self.crs = self.loc.bearing(self.detections[0].loc)
                 
                 if self.detections[0].status != 'Target':
                     # Determine if target or neutral 
@@ -137,22 +139,25 @@ class Submarine:
             self.crs = rand.randint(0, 1)*180
 
         
-        # Torpedo updating 
+        # Torpedo updating
         if len(self.torpedoes) > 0:
-            for torp in self.torpedoes:
+            for torp in self.torpedoes:  
+                
+                if torp.alive == False:
+                    torp.loc = Coord(1000,1000)
+                    torp.spd = 0
+                    self.torpedoes.remove(torp)
+                
                 if len(self.detections) > 0:
                     torp.crs = self.loc.bearing(self.detections[0].loc)  
                     dist = torp.loc.dist_to(self.detections[0].loc)
-                    if dist <= 2:
-                        torp.loc = Coord(1000,1000)
-                        torp.spd = 0
+                
+                    if (dist <= 2):
+                        self.kills.append(self.detections[0].name)
                         torp.alive = False
-                        self.torpedoes.remove(torp)
-                    elif dist >= 200:
-                        torp.loc = Coord(1000,1000)
-                        torp.spd = 0
+                    elif (dist >= 200):
                         torp.alive = False
-                        self.torpedoes.remove(torp)
+
         
     def ping(self, target_list):
         '''Verifies if any targets are within detection range'''
