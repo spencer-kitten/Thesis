@@ -36,7 +36,7 @@ class Submarine:
         self.inter_maneuver = 2 + rand.random()*5
         self.tracked = []
         self.torpedoes = []
-        self.torp_timer = 50
+        self.torp_timer = 500
         self.tracking_timer = 0
         self.indexer = index
         self.kills = []
@@ -72,8 +72,10 @@ class Submarine:
                     self.torp_timer -= 1
 
                 if self.torp_timer <= 0:
-                    self.torp_timer = 50
-                    self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
+                    if rand.random() < 0.7:
+                        self.detections[0].alive = False
+                    #self.torp_timer = 500
+                    #self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
 
                 if len(self.detections) > 0:
                     # If Contact is of "target" type, begin tracking
@@ -134,7 +136,7 @@ class Submarine:
         elif (len(self.detections) != 0) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
-        elif (self.loc.lon < 90 + (self.indexer - 1)*200) & (self.return_fun == True):
+        elif (self.loc.lon < 100 + (self.indexer - 1)*200) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
 

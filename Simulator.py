@@ -4,7 +4,6 @@ Created on Tue Jan 18 10:38:10 2022
 
 @author: spenc
 """
-
 import numpy as py
 import random as random
 import matplotlib.pyplot as plt
@@ -16,28 +15,16 @@ import time
 import imageio
 import os
 
-
 from Coord import *
 from Submarine import *
 from Merchant_Ship import Merchant_Ship
-
-
-# Comment out before runt
-import tweepy
-API = 'MUTl3aSDpI5gXgyOCCAp0sJnq'
-API_S = 'v8NzKaGoVRehTpSmOvajzAmojWlC6BFOr4RM7GOcMjZZ8wXxP0'
-Access = '314210908-lWzqrMPOsQzzS8h2L0D9hWogdDTHhLlXafBb36Ep'
-Access_S = 'SkRtc2hpu31JBtr6dGe7Rxd52qXUt1OFea6vKiwyk668L'
-
-auth = tweepy.OAuthHandler(API,API_S)
-auth.set_access_token(Access, Access_S)
-api = tweepy.API(auth)
+from twitter_acces import *
 
 def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
     # Lambda for interarrival
-    ld = 1000
+    ld = 1/(200*24*3600)
 
     # Target name builder
     tgt_name = 'Target_'
@@ -50,7 +37,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     Targets = []
     for i in tgt_names:
         Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld)
+        time_delay += py.random.exponential(1/ld)
 
 
     # Merchant name builder
@@ -64,7 +51,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     Merchants = []
     for j in merch_names:
         Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld)
+        time_delay += py.random.exponential(1/ld)
 
     # Submarine name builder
     sub_name = 'Hunter_'
@@ -181,6 +168,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
         max_timer += 1
 
     if gif == True:
+        #gif creator
         with imageio.get_writer('mygif.gif', mode='I') as writer:
             for filename in filenames:
                 image = imageio.imread(filename)
@@ -191,25 +179,3 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             os.remove(filename)
 
     return Targets,Merchants,Submarines
-
-
-if __name__ == "__main__":
-
-    n_targets = 30
-    n_merchants = 1
-    n_submarines = 10
-    seeds = 0
-    while seeds < 30:
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e7,False,False,seeds)
-
-        Killed_Targets = {}
-        for sub in Submarines:
-            Killed_Targets[str(sub.indexer)] = len(sub.tracked)
-
-        Killed_Targets = pd.DataFrame(Killed_Targets, index = [0])
-        Killed_Targets.to_csv('Killed_Targets.csv', mode = 'a')
-        seeds += 1
-
-        # Comment out
-        status_string = ("Run %d complete" % (seeds))
-        api.update_status(status_string)
