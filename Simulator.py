@@ -4,7 +4,7 @@ Created on Tue Jan 18 10:38:10 2022
 
 @author: spenc
 """
-pip install numpy
+
 import numpy as py
 import random as random
 import matplotlib.pyplot as plt
@@ -98,7 +98,8 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
     #Print RNG seed for output... be able to recreate
     '''Performs one simulation of a submarine tracking event'''
     random.seed(seed)
-
+    py.random.seed(seed)
+    
     # Generate enviroment objects
     Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub)
     Torpedoes = []
