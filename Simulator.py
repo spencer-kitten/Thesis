@@ -21,6 +21,18 @@ from Coord import *
 from Submarine import *
 from Merchant_Ship import Merchant_Ship
 
+
+# Comment out before runt
+import tweepy
+API = 'MUTl3aSDpI5gXgyOCCAp0sJnq'
+API_S = 'v8NzKaGoVRehTpSmOvajzAmojWlC6BFOr4RM7GOcMjZZ8wXxP0'
+Access = '314210908-lWzqrMPOsQzzS8h2L0D9hWogdDTHhLlXafBb36Ep'
+Access_S = 'SkRtc2hpu31JBtr6dGe7Rxd52qXUt1OFea6vKiwyk668L'
+
+auth = tweepy.OAuthHandler(API,API_S)
+auth.set_access_token(Access, Access_S)
+api = tweepy.API(auth)
+
 def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
@@ -185,13 +197,19 @@ if __name__ == "__main__":
 
     n_targets = 30
     n_merchants = 1
-    n_submarines = 1
-    seeds = 15
-    Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,2e5,False,False,seeds)
+    n_submarines = 10
+    seeds = 0
+    while seeds < 30:
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e7,False,False,seeds)
 
-    Killed_Targets = {}
-    for sub in Submarines:
-        Killed_Targets[sub.indexer] = sub.kills
+        Killed_Targets = {}
+        for sub in Submarines:
+            Killed_Targets[str(sub.indexer)] = len(sub.tracked)
 
-    Killed_Targets = pd.DataFrame(Killed_Targets)
-    Killed_Targets.to_csv('Killed_Targets.csv', index = False)
+        Killed_Targets = pd.DataFrame(Killed_Targets)
+        Killed_Targets.to_csv('Killed_Targets.csv', mode = 'a')
+        seeds += 1
+
+        # Comment out
+        status_string = ("Run %d complete" % (seeds))
+        api.update_status(status_string)

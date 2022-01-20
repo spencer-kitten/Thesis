@@ -175,6 +175,7 @@ class Submarine:
 
             elif (distance >= ping_range) and (targets in self.detections):
                 self.detections.remove(targets)
+                self.return_fun = True
 
         if len(self.detections) > 0:
             return 'Ping'
