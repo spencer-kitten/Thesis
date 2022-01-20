@@ -255,7 +255,7 @@ class Submarine:
             else:
                 current_crs -= 1*rudder/10
 
-        # Compass conversion        
+        # Compass conversion
         if current_crs >= 360:
             self.crs = current_crs - 360
         elif current_crs < 0:
