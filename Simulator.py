@@ -206,7 +206,7 @@ if __name__ == "__main__":
         for sub in Submarines:
             Killed_Targets[str(sub.indexer)] = len(sub.tracked)
 
-        Killed_Targets = pd.DataFrame(Killed_Targets)
+        Killed_Targets = pd.DataFrame(Killed_Targets, index = [0])
         Killed_Targets.to_csv('Killed_Targets.csv', mode = 'a')
         seeds += 1
 
