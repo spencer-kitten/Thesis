@@ -187,11 +187,11 @@ if __name__ == "__main__":
     n_merchants = 1
     n_submarines = 1
     seeds = 15
-    Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e5,False,False,seeds)
+    Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,2e5,False,False,seeds)
 
     Killed_Targets = {}
     for sub in Submarines:
         Killed_Targets[sub.indexer] = sub.kills
 
     Killed_Targets = pd.DataFrame(Killed_Targets)
-    pd.to_csv(Killed_Targets, index = False)
+    Killed_Targets.to_csv('Killed_Targets.csv', index = False)
