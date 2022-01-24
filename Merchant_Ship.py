@@ -51,7 +51,7 @@ class Merchant_Ship:
         '''Geometric Hops'''
 
         if self.td > 0:
-            self.td = self.td - 1/(24)
+            self.td = self.td - 1
 
         elif (self.loc.lat <= 10000):
 

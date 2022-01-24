@@ -24,7 +24,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
     # Lambda for interarrival
-    ld = 1/(200*24*3600)
+    ld = (24*3600)/100
 
     # Target name builder
     tgt_name = 'Target_'
@@ -37,7 +37,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     Targets = []
     for i in tgt_names:
         Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(1/ld)
+        time_delay += py.random.poisson(ld)
 
 
     # Merchant name builder
@@ -51,7 +51,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
     Merchants = []
     for j in merch_names:
         Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(1/ld)
+        time_delay += py.random.poisson(ld)
 
     # Submarine name builder
     sub_name = 'Hunter_'

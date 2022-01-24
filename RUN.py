@@ -14,7 +14,7 @@ def RUN(n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, 
         filename = 'Killed_Targets.csv'
         gif_filename = 'mygif.gif'
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e7,plots,gif,seeds)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e5,plots,gif,seeds)
 
         Killed_Targets = {}
         for sub in Submarines:
@@ -39,4 +39,7 @@ def RUN(n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, 
     # Update Spencer
     if tweet == True:
         status_string = ("Run Complete")
-        api.update_with_media(gif_filename, status_string)
+        api.update_status(status_string)
+
+    for item in Targets:
+        print(item.td)
