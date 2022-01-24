@@ -36,7 +36,7 @@ class Submarine:
         self.inter_maneuver = 2 + rand.random()*5
         self.tracked = []
         self.torpedoes = []
-        self.torp_timer = 500
+        self.torp_timer = 50
         self.tracking_timer = 0
         self.indexer = index
         self.kills = []
@@ -74,7 +74,8 @@ class Submarine:
                 if self.torp_timer <= 0:
                     if rand.random() < 0.7:
                         self.detections[0].alive = False
-                    #self.torp_timer = 500
+                        self.torp_timer = 50
+
                     #self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
 
                 if len(self.detections) > 0:
