@@ -70,7 +70,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
 
     return Targets,Merchants,Submarines
 
-def contact_picture(tgt_list,merch_list,sub_list,torp_list,plot_lim = 1):
+def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
     '''Plots contact picture'''
 
     # Targets
@@ -85,10 +85,6 @@ def contact_picture(tgt_list,merch_list,sub_list,torp_list,plot_lim = 1):
     for item_s in sub_list:
         plt.plot(item_s.loc.lon,item_s.loc.lat, 'go')
 
-    # Torpedoes
-    for item_p in torp_list:
-        plt.plot(item_p.loc.lon,item_p.loc.lat, 'yo')
-
     plt.xlim(0,200 + 200*(plot_lim - 1))
     plt.ylim(0,100)
     #plt.axis('equal')
@@ -101,7 +97,6 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
 
     # Generate enviroment objects
     Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub)
-    Torpedoes = []
 
     # Working indexes
     plotter_index = 0
@@ -122,15 +117,9 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             # Move sumbarine
             item_s.update_position()
 
-
             # Move torpedo
             item_s.ping(target_list)
-            if len(item_s.torpedoes) > 0:
-                for torpedo in item_s.torpedoes:
-                    if torpedo.alive == True:
-                        torpedo.update_position()
-                        if torpedo.name not in Torpedoes:
-                            Torpedoes.append(torpedo)
+
 
         for item_m in Merchants:
             # Move merchant
@@ -144,19 +133,13 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             # Move target
             item_t.update_position()
 
-            # Check if target has been shot
-            for item_s in Submarines:
-                if len(item_s.torpedoes) > 0:
-                    for torpedo in item_s.torpedoes:
-                        item_t.torpedo_check(torpedo.loc)
-
         plotter_index += 1
 
         # Plotting only occurs once in 800 steps. Set to improve visual clarity and runtime
         if plotter_index > 500:
             plotter_index = 0
             if plotter == True:
-                contact_picture(Targets,Merchants,Submarines,Torpedoes,len(Submarines))
+                contact_picture(Targets,Merchants,Submarines,len(Submarines))
                 filename = f'{i}.png'
                 i += 1
                 filenames.append(filename)

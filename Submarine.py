@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 
 
 from Coord import *
-from Torpedo import *
 
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
@@ -79,8 +78,6 @@ class Submarine:
                     else:
                         pass
 
-                    #self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
-
                 if len(self.detections) > 0:
                     # If Contact is of "target" type, begin tracking
 
@@ -140,28 +137,6 @@ class Submarine:
             self.spd = 12
         if (len(self.detections) > 0) & ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)):
             self.return_fun = False
-
-
-
-
-        # Torpedo updating
-        if len(self.torpedoes) > 0:
-            for torp in self.torpedoes:
-
-                if torp.alive == False:
-                    torp.loc = Coord(1000,1000)
-                    torp.spd = 0
-                    self.torpedoes.remove(torp)
-
-                if len(self.detections) > 0:
-                    torp.crs = self.loc.bearing(self.detections[0].loc)
-                    dist = torp.loc.dist_to(self.detections[0].loc)
-
-                    if (dist <= 2):
-                        self.kills.append(self.detections[0].name)
-                        torp.alive = False
-                    elif (dist >= 200):
-                        torp.alive = False
 
 
     def ping(self, target_list):
