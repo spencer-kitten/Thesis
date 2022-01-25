@@ -66,6 +66,11 @@ class Merchant_Ship:
         elif (self.loc.lat <= 10000) or (self.loc.lon >= 2000):
             self.alive = False
 
+
+        if self.alive == False:
+            self.loc = Coord(10000,10000)
+
+
     def torpedo_check(self,other):
         '''Verifies if self has been destroyed by torpedo.'''
 
@@ -74,11 +79,6 @@ class Merchant_Ship:
         if (distance < 2):
             self.loc = Coord(10000,10000)
             self.alive = False
-
-
-
-
-
 
     def __str__(self):
         return "(%f,%f), spd = %f, crs = %d" % (self.loc.lat,self.loc.lon,self.spd, self.crs)
