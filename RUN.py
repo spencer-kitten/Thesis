@@ -43,3 +43,13 @@ def RUN(n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, 
 
     for item in Targets:
         print(item.td)
+
+
+if __name__ == '__main__':
+    job_num = int(sys.argv[1])
+    n_targets = int(sys.argv[2])
+    n_merchants = int(sys.argv[3])
+    n_submarines = int(sys.argv[4])
+    seed = int(sys.argv[5])
+    max_samples = int(sys.argv[6])
+    RUN(job_num,n_targets,n_merchants,n_submarines,seed,max_samples)
