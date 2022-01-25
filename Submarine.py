@@ -33,7 +33,7 @@ class Submarine:
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
         # Uniform intermaneuver times
-        self.inter_maneuver = 2 + rand.random()*5
+        self.inter_maneuver = 500 + rand.random()*250
         self.tracked = []
         self.torpedoes = []
         self.torp_timer = 50
@@ -75,6 +75,9 @@ class Submarine:
                     if rand.random() < 0.7:
                         self.detections[0].alive = False
                         self.torp_timer = 50
+                        self.kills.append(self.detections[0].name)
+                    else:
+                        pass
 
                     #self.torpedoes.append(Torpedo('Torpedo', self.loc, self.loc.bearing(self.detections[0].loc), speed = 40))
 
@@ -92,21 +95,15 @@ class Submarine:
                         # Maneuvers performed astern of target while in trail
                         if (randomizing_factor < .5) and (self.detections[0].status == 'Target'):
                             self.crs = self.loc.bearing(self.detections[0].loc) + 30
-                            self.ranging_timer = (2 + 30*rand.random())*500
-                            self.inter_maneuver = 2 + rand.random()*500
+                            self.ranging_timer =  500 + rand.random()*250
+                            self.inter_maneuver = 500 + rand.random()*250
 
                         elif (.5 <= randomizing_factor < 1) and (self.detections[0].status == 'Target'):
                             self.crs = self.loc.bearing(self.detections[0].loc) - 30
-                            self.ranging_timer = (2 + 30*rand.random())*500
-                            self.inter_maneuver = 2 + rand.random()*500
+                            self.ranging_timer =  500 + rand.random()*250
+                            self.inter_maneuver = 500 + rand.random()*250
                     else:
                         self.inter_maneuver = self.inter_maneuver - 1
-
-
-        elif (self.return_fun == True):
-            # Return to search position
-            self.crs = 270
-            self.spd = 33
 
         if self.ranging_timer > 0:
             self.ranging_timer = self.ranging_timer - 1
@@ -127,19 +124,24 @@ class Submarine:
             self.crs = 0
 
         # Prevent submarine from leaving waterspace
-        if self.loc.lon >= 200 + (self.indexer - 1)*200 - 40000/2000:
+        if self.loc.lon >= (200 + (self.indexer - 1)*200 - 40000/2000):
             self.return_fun = True
             self.detections.pop(0)
             self.crs = 270
-        elif (self.loc.lon >= 100 + (self.indexer - 1)*200) & (len(self.detections) == 0):
+        if (self.loc.lon <= 90 + (self.indexer - 1)*200) & (len(self.detections) == 0):
+            self.return_fun = True
+            self.crs = 90
+        if (self.loc.lon >= 110 + (self.indexer - 1)*200) & (len(self.detections) == 0):
             self.return_fun = True
             self.crs = 270
-        elif (len(self.detections) != 0) & (self.return_fun == True):
+        if (len(self.detections) == 0) & (self.return_fun == True) & ((95 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
-        elif (self.loc.lon < 100 + (self.indexer - 1)*200) & (self.return_fun == True):
+            self.spd = 12
+        if (len(self.detections) > 0) & ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)):
             self.return_fun = False
-            self.crs = rand.randint(0, 1)*180
+
+
 
 
         # Torpedo updating

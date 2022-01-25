@@ -122,6 +122,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             # Move sumbarine
             item_s.update_position()
 
+
             # Move torpedo
             item_s.ping(target_list)
             if len(item_s.torpedoes) > 0:
@@ -156,12 +157,11 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             plotter_index = 0
             if plotter == True:
                 contact_picture(Targets,Merchants,Submarines,Torpedoes,len(Submarines))
-                if gif == True:
-                    filename = f'{i}.png'
-                    i += 1
-                    filenames.append(filename)
-                    plt.savefig(filename)
-                    plt.close()
+                filename = f'{i}.png'
+                i += 1
+                filenames.append(filename)
+                plt.savefig(filename)
+                plt.close()
 
 
         # Ensure if no detections occurs that simulation will halt

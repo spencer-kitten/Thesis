@@ -42,10 +42,6 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
         status_string = ("Run Complete")
         api.update_status(status_string)
 
-    #for item in Targets:
-        #print(item.td)
-
-
 if __name__ == '__main__':
     job_num = int(sys.argv[1])
     n_targets = int(sys.argv[2])
