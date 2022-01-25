@@ -1,7 +1,8 @@
+
 from Simulator import *
+import sys
 
-
-def RUN(n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, gif = False, tweet = False):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, gif = False, tweet = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 
@@ -11,10 +12,10 @@ def RUN(n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, 
 
     while seeds < max_samples:
         '''Runs a simulation instance. Appends data to Killed_Targets.csv. '''
-        filename = 'Killed_Targets.csv'
-        gif_filename = 'mygif.gif'
+        filename = f'Killed_Targets-{job_num}.csv'
+        gif_filename = f'mygif-{job_num}.gif'
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e10,plots,gif,seeds)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e5,plots,gif,seeds)
 
         Killed_Targets = {}
         for sub in Submarines:
