@@ -43,6 +43,7 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
         api.update_status(status_string)
 
 if __name__ == '__main__':
+    # six arugments needed
     job_num = int(sys.argv[1])
     n_targets = int(sys.argv[2])
     n_merchants = int(sys.argv[3])
