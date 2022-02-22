@@ -125,17 +125,14 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             item_s.update_position()
 
         for item_m in Merchants:
-            # Check if target is dead
-            if item_m.alive == True:
-                # Move merchant
-                item_m.update_position()
+            # Move merchant
+            item_m.update_position()
 
         alive = False
         for item_t in Targets:
-            if item_t.alive == True:
-                # Move target
-                item_t.update_position()
-                alive = True
+            # Move target
+            item_t.update_position()
+            alive = True
 
         if (alive == False):
             Simulation_Stop = True
