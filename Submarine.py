@@ -27,6 +27,8 @@ class Submarine:
         # detections and detected before split to allow prioritization by the submarine
         self.detections = []
         self.detected_before = []
+        self.focus = []
+        self.friends = []
         # allows time between maneuvers
         self.ranging_timer = 0
         # Forces submarine to return to center postion to resume search if reach boundry
@@ -35,10 +37,12 @@ class Submarine:
         self.inter_maneuver = 500 + rand.random()*250
         self.tracked = []
         self.torpedoes = []
-        self.torp_timer = 50
-        self.tracking_timer = 0
+        self.torp_timer = 5000
+        self.tracking_timer = [0]
+        self.tracking_timer_index = 0
         self.indexer = index
         self.kills = []
+
 
     def update_position(self):
         '''Geometric Hops'''
@@ -46,65 +50,72 @@ class Submarine:
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
 
-        # Logic of Submarine Movment
-        if (len(self.detections) > 0) & (self.return_fun == False):
-            # At least on target detected, submarine not near left edge of waterspace
-            self.tracking_timer += 1
+        if (len(self.focus) > 0) & (self.return_fun == False):
 
-            if self.loc.dist_to(self.detections[0].loc) > 20000/2000:
+            if self.loc.dist_to(self.focus[0].loc) > 20000/2000:
                 # Within detection range, not within tracking range
                 # Speed up to close distance
-                self.crs = self.loc.bearing(self.detections[0].loc)
+                self.crs = self.loc.bearing(self.focus[0].loc)
                 self.spd = 33
 
-            elif (self.ranging_timer <= 0) and (self.loc.dist_to(self.detections[0].loc) <= 20000/2000):
+
+            elif (self.loc.dist_to(self.focus[0].loc) <= 20000/2000):
                 # Within tracking range
                 self.spd = 17
-                self.crs = self.loc.bearing(self.detections[0].loc)
+                self.crs = self.loc.bearing(self.focus[0].loc)
 
-                if self.detections[0].status != 'Target':
+
+                if self.focus[0].status != 'Target':
                     # Determine if target or neutral
                     self.detections.pop(0)
-                    self.crs = round(rand.random())*180
+                    self.friends.append(self.focus[0])
+                    self.crs = rand.randint(0, 1)*180
 
-                elif (self.detections[0].status == 'Target'):
+                elif (self.focus[0].status == 'Target'):
                     self.torp_timer -= 1
 
-                if self.torp_timer <= 0:
-                    if rand.random() < 0.7:
-                        self.detections[0].alive = False
-                        self.torp_timer = 50
-                        self.kills.append(self.detections[0].name)
-                    else:
-                        pass
+                    if self.torp_timer <= 0:
+                        if rand.random() < 0.7:
+                            self.focus[0].alive = False
+                            self.torp_timer = 5000
+                            self.kills.append(self.focus[0].name)
+                            self.friends.append(self.focus[0])
+                            self.crs = rand.randint(0, 1)*180
+                        else:
+                            self.torp_timer = 5000
+        elif (len(self.focus) == 0) & (self.return_fun == False):
 
-                if len(self.detections) > 0:
-                    # If Contact is of "target" type, begin tracking
+            self.spd = 12
 
-                    # Store name
-                    if self.detections[0].name not in self.tracked:
-                        self.tracked.append(self.detections[0].name)
+            if self.loc.lat >= 100 - 30000/2000:
+                self.crs = 180
+            elif self.loc.lat <= 0 + 30000/2000:
+                self.crs = 0
 
-                    if self.inter_maneuver <= 0:
+        elif (len(self.focus) > 0) & (self.return_fun == True):
+            self.return_fun = False
 
-                        randomizing_factor = rand.random()
 
-                        # Maneuvers performed astern of target while in trail
-                        if (randomizing_factor < .5) and (self.detections[0].status == 'Target'):
-                            self.crs = self.loc.bearing(self.detections[0].loc) + 30
-                            self.ranging_timer =  500 + rand.random()*250
-                            self.inter_maneuver = 500 + rand.random()*250
 
-                        elif (.5 <= randomizing_factor < 1) and (self.detections[0].status == 'Target'):
-                            self.crs = self.loc.bearing(self.detections[0].loc) - 30
-                            self.ranging_timer =  500 + rand.random()*250
-                            self.inter_maneuver = 500 + rand.random()*250
-                    else:
-                        self.inter_maneuver = self.inter_maneuver - 1
 
-        if self.ranging_timer > 0:
-            self.ranging_timer = self.ranging_timer - 1
 
+        # Prevent submarine from leaving waterspace
+        if self.loc.lon >= (110 + (self.indexer - 1)*200):
+            if (len(self.focus) == 0):
+                self.return_fun = True
+                self.crs = 270
+        if ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)) & (self.return_fun == True):
+            self.return_fun = False
+            self.crs = rand.randint(0, 1)*180
+        if self.loc.lat >= 100:
+            self.crs = 180
+        elif self.loc.lat <= 0:
+            self.crs = 0
+
+
+
+        radians = self.bearing_to_rads(self.crs)
+        d = self.spd*(1/3600)
 
         # Geometric hops
         updated_lat = self.loc.lat + math.sin(radians)*d
@@ -113,52 +124,38 @@ class Submarine:
         # Re-store location as Coord object in .loc
         self.loc = Coord(updated_lat,updated_lon)
 
-        # Prevent Submarine from leaving top or bottom of waterspace
-        # Needs reflection modification
-        if self.loc.lat >= 100 - 40000/2000:
-            self.crs = 180
-        elif self.loc.lat <= 0 + 40000/2000:
-            self.crs = 0
-
-        # Prevent submarine from leaving waterspace
-        if self.loc.lon >= (200 + (self.indexer - 1)*200 - 40000/2000):
-            self.return_fun = True
-            self.detections.pop(0)
-            self.crs = 270
-        if (self.loc.lon <= 90 + (self.indexer - 1)*200) & (len(self.detections) == 0):
-            self.return_fun = True
-            self.crs = 90
-        if (self.loc.lon >= 110 + (self.indexer - 1)*200) & (len(self.detections) == 0):
-            self.return_fun = True
-            self.crs = 270
-        if (len(self.detections) == 0) & (self.return_fun == True) & ((95 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)):
-            self.return_fun = False
-            self.crs = rand.randint(0, 1)*180
-            self.spd = 12
-        if (len(self.detections) > 0) & ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)):
-            self.return_fun = False
-
 
     def ping(self, target_list):
         '''Verifies if any targets are within detection range'''
 
         #  range in nm
         ping_range = 40000/2000
+        min_dist  = 999999
+
+        self.detections = []
+        self.focus = []
 
         for targets in target_list:
             distance = self.loc.dist_to(targets.loc)
 
-            if distance < ping_range:
-                if (targets.name not in self.detections) and (targets.name not in self.detected_before):
+            if (distance < ping_range) & (targets.loc.lon <= 190 + (self.indexer - 1)*200):
+
+                if (targets in self.friends) or (targets.alive == False):
+                    continue
+
+                if distance < min_dist:
+                    min_dist = distance
+                    self.detections.insert(0,targets)
+                else:
                     self.detections.append(targets)
+
+                if targets.name not in self.detected_before:
                     self.detected_before.append(targets.name)
 
-            elif (distance >= ping_range) and (targets in self.detections):
-                self.detections.remove(targets)
-                self.return_fun = True
-
-        if len(self.detections) > 0:
-            return 'Ping'
+        try:
+            self.focus.append(self.detections[0])
+        except:
+            self.focus = []
 
 
     def bearing_to_rads(self, crs):

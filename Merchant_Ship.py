@@ -68,7 +68,7 @@ class Merchant_Ship:
 
 
         if self.alive == False:
-            self.loc = Coord(10000,10000)
+            self.loc = Coord(1000000,1000000)
 
 
     def torpedo_check(self,other):

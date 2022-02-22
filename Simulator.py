@@ -89,7 +89,7 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
     plt.ylim(0,100)
     #plt.axis('equal')
 
-def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = False,seed = 10):
+def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = True,seed = 10):
     #Print RNG seed for output... be able to recreate
     '''Performs one simulation of a submarine tracking event'''
     random.seed(seed)
@@ -114,12 +114,12 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
         target_list = Targets + Merchants
 
         for item_s in Submarines:
-            # Move sumbarine
-            item_s.update_position()
 
             # Move torpedo
             item_s.ping(target_list)
 
+            # Move sumbarine
+            item_s.update_position()
 
         for item_m in Merchants:
             # Move merchant
@@ -145,6 +145,10 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
                 filenames.append(filename)
                 plt.savefig(filename)
                 plt.close()
+                try:
+                    print(Submarines[0].focus)
+                except:
+                    print('none')
 
 
         # Ensure if no detections occurs that simulation will halt
