@@ -8,7 +8,7 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
 
     # Set number of replications
     #max_samples = seeds + max_samples
-    max_samples = 1
+    max_samples = seeds + 1
     run = 0
 
     while seeds < max_samples:
