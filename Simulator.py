@@ -130,12 +130,14 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
                 # Move merchant
                 item_m.update_position()
 
+        alive = False
         for item_t in Targets:
             if item_t.alive == True:
                 # Move target
                 item_t.update_position()
+                alive = True
 
-        if (len(Targets) == 0):
+        if (alive == False):
             Simulation_Stop = True
             print('All Targets Sunk')
             break
