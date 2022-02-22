@@ -91,6 +91,9 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
 
 def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = True,seed = 10):
     #Print RNG seed for output... be able to recreate
+
+    Simulation_Stop = False
+
     '''Performs one simulation of a submarine tracking event'''
     random.seed(seed)
     py.random.seed(seed)
@@ -122,16 +125,21 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             item_s.update_position()
 
         for item_m in Merchants:
-            # Move merchant
-            item_m.update_position()
-
             # Check if target is dead
-            if item_m.alive == False:
-                Merchants.pop(item_m)
+            if item_m.alive == True:
+                # Move merchant
+                item_m.update_position()
 
         for item_t in Targets:
-            # Move target
-            item_t.update_position()
+            if item_t.alive == True:
+                # Move target
+                item_t.update_position()
+
+        if (len(Targets) == 0):
+            Simulation_Stop = True
+            print('All Targets Sunk')
+            break
+
 
         plotter_index += 1
 
@@ -145,14 +153,21 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
                 filenames.append(filename)
                 plt.savefig(filename)
                 plt.close()
-                try:
-                    print(Submarines[0].focus)
-                except:
-                    print('none')
 
+            Simulation_Stop = True
+            for item_t in Targets:
+                if item_t.loc.lon < (n_submarines*200):
+                    Simulation_Stop = False
+                    break
+
+            if Simulation_Stop == True:
+                max_timer = max_time + 1
+                print('All Targets have left the area.')
+                break
 
         # Ensure if no detections occurs that simulation will halt
         max_timer += 1
+
 
     if gif == True:
         #gif creator

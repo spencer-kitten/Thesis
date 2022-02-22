@@ -96,9 +96,6 @@ class Submarine:
             self.return_fun = False
 
 
-
-
-
         # Prevent submarine from leaving waterspace
         if self.loc.lon >= (110 + (self.indexer - 1)*200):
             if (len(self.focus) == 0):
@@ -111,8 +108,6 @@ class Submarine:
             self.crs = 180
         elif self.loc.lat <= 0:
             self.crs = 0
-
-
 
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
