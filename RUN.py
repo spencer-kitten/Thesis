@@ -2,7 +2,7 @@
 from Simulator import *
 import sys
 
-def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, gif = False, tweet = False):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = True, gif = True, tweet = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 
@@ -16,7 +16,7 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
         filename = f'Killed_Targets-{job_num}.csv'
         gif_filename = f'mygif-{job_num}.gif'
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e7,plots,gif,seeds)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,5e5,plots,gif,seeds)
 
         Killed_Targets = {}
         for sub in Submarines:

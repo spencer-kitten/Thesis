@@ -20,38 +20,46 @@ from Submarine import *
 from Merchant_Ship import Merchant_Ship
 from twitter_acces import *
 
-def generate_objects(n_merch,n_tgts,n_subs,speed_sub):
+def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = []):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
-    # Lambda for interarrival
-    ld = (24*3600)/10
+    # Lambda for interarrival target & merchant
+    ld_t = (24*3600)/10
+    ld_m = (10*3600)/10
 
     # Target name builder
+    try:
+        starting_int = Targets[-1].name
+        starting_int = int(starting_int[-1])
+    except:
+        starting_int = 0
     tgt_name = 'Target_'
     tgt_names = []
-    for i in range(1,n_tgts+1):
+    for i in range(starting_int + 1,n_tgts+starting_int+1):
         tgt_names.append(tgt_name + str(i))
 
     # Target builder
     time_delay = 0
-    Targets = []
     for i in tgt_names:
         Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld)
-
+        time_delay += py.random.exponential(ld_t)
 
     # Merchant name builder
+    try:
+        starting_int = Merchants[-1].name
+        starting_int = int(starting_int[-1])
+    except:
+        starting_int = 0
     merch_name = 'Merchant_'
     merch_names = []
-    for i in range(1,n_merch+1):
+    for i in range(starting_int + 1,n_merch+starting_int+1):
         merch_names.append(merch_name + str(i))
 
     # Merchant builder
-    time_delay = py.random.gamma(n_merch,scale = 1/ld)
-    Merchants = []
+    time_delay = 0
     for j in merch_names:
         Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld)
+        time_delay += py.random.exponential(ld_m)
 
     # Submarine name builder
     sub_name = 'Hunter_'
@@ -89,6 +97,24 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
     plt.ylim(0,100)
     #plt.axis('equal')
 
+def Pois(arrival_timer,Targets, Merchants):
+    # Lambda for interarrival target & merchant
+    ld_t = (24*3600)/10
+    ld_m = (10*3600)/10
+    if arrival_timer <= 0:
+        RV = py.random.random()
+        if RV < (ld_t/(ld_t + ld_m)):
+            Targets, Merchants, Submarines = generate_objects(0,1,0,0)
+        else:
+            Targets, Merchants, Submarines = generate_objects(1,0,0,0)
+        arrival_timer = py.random.exponential(ld_m + ld_t)
+
+    else:
+        arrival_timer -= 1
+
+    return Targets, Merchants, arrival_timer
+
+
 def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = True,seed = 10):
     #Print RNG seed for output... be able to recreate
 
@@ -104,6 +130,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
     # Working indexes
     plotter_index = 0
     max_timer = 0
+    arrival_timer = 0
 
     # Clear any existing plots
     plt.clf()
@@ -128,17 +155,11 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             # Move merchant
             item_m.update_position()
 
-        alive = False
         for item_t in Targets:
             # Move target
             item_t.update_position()
-            alive = True
 
-        if (alive == False):
-            Simulation_Stop = True
-            print('All Targets Sunk')
-            break
-
+        Targets, Merchants, arrival_timer = Pois(arrival_timer,Targets, Merchants)
 
         plotter_index += 1
 
@@ -152,17 +173,6 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
                 filenames.append(filename)
                 plt.savefig(filename)
                 plt.close()
-
-            Simulation_Stop = True
-            for item_t in Targets:
-                if item_t.loc.lon < (n_submarines*200):
-                    Simulation_Stop = False
-                    break
-
-            if Simulation_Stop == True:
-                max_timer = max_time + 1
-                print('All Targets have left the area.')
-                break
 
         # Ensure if no detections occurs that simulation will halt
         max_timer += 1
