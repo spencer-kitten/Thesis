@@ -28,18 +28,12 @@ class Submarine:
         self.detections = []
         self.detected_before = []
         self.focus = []
+        self.prev_focus = []
         self.friends = []
-        # allows time between maneuvers
-        self.ranging_timer = 0
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
-        # Uniform intermaneuver times
-        self.inter_maneuver = 500 + rand.random()*250
-        self.tracked = []
-        self.torpedoes = []
-        self.torp_timer = 5000
-        self.tracking_timer = [0]
-        self.tracking_timer_index = 0
+        self.descriminating_timer = 5*60
+        self.torp_timer = 1*60
         self.indexer = index
         self.kills = []
 
@@ -64,25 +58,35 @@ class Submarine:
                 self.spd = 17
                 self.crs = self.loc.bearing(self.focus[0].loc)
 
+                # Check if new target
+                if self.focus[0].name != self.prev_focus:
+                    self.descriminating_timer = 5*60
+                    self.prev_focus = self.focus[0].name
 
-                if self.focus[0].status != 'Target':
-                    # Determine if target or neutral
-                    self.detections.pop(0)
-                    self.friends.append(self.focus[0])
-                    self.crs = rand.randint(0, 1)*180
+                if self.descriminating_timer < 0:
+                    if self.focus[0].status != 'Target':
+                        # Determine if target or neutral
+                        self.detections.pop(0)
+                        self.friends.append(self.focus[0])
+                        self.crs = rand.randint(0, 1)*180
+                        
 
-                elif (self.focus[0].status == 'Target'):
-                    self.torp_timer -= 1
+                    elif (self.focus[0].status == 'Target'):
+                        self.torp_timer -= 1
 
-                    if self.torp_timer <= 0:
-                        if rand.random() < 0.7:
-                            self.focus[0].alive = False
-                            self.torp_timer = 5000
-                            self.kills.append(self.focus[0].name)
-                            self.friends.append(self.focus[0])
-                            self.crs = rand.randint(0, 1)*180
-                        else:
-                            self.torp_timer = 5000
+                        if self.torp_timer <= 0:
+                            if rand.random() < 0.7:
+                                print(self.focus[0].name)
+                                self.focus[0].alive = False
+                                self.torp_timer = 1*60
+                                self.kills.append(self.focus[0].name)
+                                self.friends.append(self.focus[0])
+                                self.crs = rand.randint(0, 1)*180
+
+                            else:
+                                self.torp_timer = 1*60
+                else:
+                    self.descriminating_timer -= 1
         elif (len(self.focus) == 0) & (self.return_fun == False):
 
             self.spd = 12

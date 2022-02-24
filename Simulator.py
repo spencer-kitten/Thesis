@@ -23,10 +23,6 @@ from twitter_acces import *
 def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = []):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
-    # Lambda for interarrival target & merchant
-    ld_t = (24*3600)/10
-    ld_m = (10*3600)/10
-
     # Target name builder
     try:
         starting_int = Targets[-1].name
@@ -42,7 +38,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = 
     time_delay = 0
     for i in tgt_names:
         Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld_t)
+        time_delay += py.random.exponential(1/ld_t)
 
     # Merchant name builder
     try:
@@ -59,7 +55,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = 
     time_delay = 0
     for j in merch_names:
         Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay))
-        time_delay += py.random.exponential(ld_m)
+        time_delay += py.random.exponential(1/ld_m)
 
     # Submarine name builder
     sub_name = 'Hunter_'
@@ -98,16 +94,14 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
     #plt.axis('equal')
 
 def Pois(arrival_timer,Targets, Merchants):
-    # Lambda for interarrival target & merchant
-    ld_t = (24*3600)/10
-    ld_m = (10*3600)/10
+
     if arrival_timer <= 0:
         RV = py.random.random()
         if RV < (ld_t/(ld_t + ld_m)):
             Targets, Merchants, Submarines = generate_objects(0,1,0,0)
         else:
             Targets, Merchants, Submarines = generate_objects(1,0,0,0)
-        arrival_timer = py.random.exponential(ld_m + ld_t)
+        arrival_timer = py.random.exponential(1/(ld_m + ld_t))
 
     else:
         arrival_timer -= 1
@@ -117,6 +111,12 @@ def Pois(arrival_timer,Targets, Merchants):
 
 def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = True,seed = 10):
     #Print RNG seed for output... be able to recreate
+
+    # Lambda for interarrival target & merchant
+    global ld_t
+    global ld_m
+    ld_t = 1/(24*3600)
+    ld_m = 10/(24*3600)
 
     Simulation_Stop = False
 
