@@ -2,7 +2,7 @@
 from Simulator import *
 import sys
 
-def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = True, gif = True, tweet = False):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, gif = False, tweet = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 

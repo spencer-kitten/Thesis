@@ -36,7 +36,7 @@ class Submarine:
         self.torp_timer = 1*60
         self.indexer = index
         self.kills = []
-        self.tracking_timer = []
+        self.tracking_timer = [0]
         self.tracking_index = 0
 
 
@@ -52,6 +52,7 @@ class Submarine:
                 self.tracking_timer[self.tracking_index] += 1
             else:
                 self.tracking_index += 1
+                self.tracking_timer.append(0)
 
             if self.loc.dist_to(self.focus[0].loc) > 20000/2000:
                 # Within detection range, not within tracking range
@@ -77,6 +78,7 @@ class Submarine:
                         self.friends.append(self.focus[0])
                         self.crs = rand.randint(0, 1)*180
                         self.tracking_index += 1
+                        self.tracking_timer.append(0)
 
 
                     elif (self.focus[0].status == 'Target'):
@@ -84,13 +86,13 @@ class Submarine:
 
                         if self.torp_timer <= 0:
                             if rand.random() < 0.7:
-                                print(self.focus[0].name)
                                 self.focus[0].alive = False
                                 self.torp_timer = 1*60
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
                                 self.tracking_index += 1
+                                self.tracking_timer.append(0)
 
                             else:
                                 self.torp_timer = 1*60
