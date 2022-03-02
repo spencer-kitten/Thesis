@@ -53,7 +53,7 @@ class Merchant_Ship:
         if self.td > 0:
             self.td = self.td - 1
 
-        elif (self.loc.lat <= 10000):
+        elif (self.alive == True):
 
             radians = self.bearing_to_rads(self.crs)
             d = self.spd*(1/3600)
@@ -63,7 +63,7 @@ class Merchant_Ship:
 
             self.loc = Coord(updated_lat,updated_lon)
 
-        elif (self.loc.lat <= 10000) or (self.loc.lon >= 2000):
+        elif (self.loc.lon >= 2000):
             self.alive = False
 
 

@@ -36,6 +36,8 @@ class Submarine:
         self.torp_timer = 1*60
         self.indexer = index
         self.kills = []
+        self.tracking_timer = []
+        self.tracking_index = 0
 
 
     def update_position(self):
@@ -45,6 +47,11 @@ class Submarine:
         d = self.spd*(1/3600)
 
         if (len(self.focus) > 0) & (self.return_fun == False):
+
+            if self.focus[0].name == self.prev_focus:
+                self.tracking_timer[self.tracking_index] += 1
+            else:
+                self.tracking_index += 1
 
             if self.loc.dist_to(self.focus[0].loc) > 20000/2000:
                 # Within detection range, not within tracking range
@@ -69,7 +76,8 @@ class Submarine:
                         self.detections.pop(0)
                         self.friends.append(self.focus[0])
                         self.crs = rand.randint(0, 1)*180
-                        
+                        self.tracking_index += 1
+
 
                     elif (self.focus[0].status == 'Target'):
                         self.torp_timer -= 1
@@ -82,6 +90,7 @@ class Submarine:
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
+                                self.tracking_index += 1
 
                             else:
                                 self.torp_timer = 1*60
@@ -135,21 +144,21 @@ class Submarine:
         self.focus = []
 
         for targets in target_list:
-            distance = self.loc.dist_to(targets.loc)
+            if targets.alive == True:
+                if (targets.loc.lon <= 190 + (self.indexer - 1)*200) & (targets.loc.lon >= (self.indexer - 1)*200):
+                    distance = self.loc.dist_to(targets.loc)
+                    if (distance < ping_range):
+                        if (targets in self.friends) or (targets.alive == False):
+                            continue
 
-            if (distance < ping_range) & (targets.loc.lon <= 190 + (self.indexer - 1)*200):
+                        if distance < min_dist:
+                            min_dist = distance
+                            self.detections.insert(0,targets)
+                        else:
+                            self.detections.append(targets)
 
-                if (targets in self.friends) or (targets.alive == False):
-                    continue
-
-                if distance < min_dist:
-                    min_dist = distance
-                    self.detections.insert(0,targets)
-                else:
-                    self.detections.append(targets)
-
-                if targets.name not in self.detected_before:
-                    self.detected_before.append(targets.name)
+                        if targets.name not in self.detected_before:
+                            self.detected_before.append(targets.name)
 
         try:
             self.focus.append(self.detections[0])

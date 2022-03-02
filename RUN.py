@@ -19,13 +19,13 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
         global Targets
         global Merchants
         global Submarines
-        
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e5,plots,gif,seeds)
+
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,1e7,plots,gif,seeds)
 
         Killed_Targets = {}
         for sub in Submarines:
             Killed_Targets[str(sub.indexer) + ' kills'] = len(sub.kills)
-            #Killed_Targets[str(sub.indexer) + ' tracking'] = py.mean(sub.tracking_timer)
+            Killed_Targets[str(sub.indexer) + ' tracking'] = py.mean(sub.tracking_timer)
 
         Killed_Targets = pd.DataFrame(Killed_Targets, index = [0])
         Killed_Targets.to_csv(filename, mode = 'a')
