@@ -36,7 +36,7 @@ class Submarine:
         self.torp_timer = 1*60
         self.indexer = index
         self.kills = []
-        self.tracking_timer = [0]
+        self.tracking_timer = []
         self.tracking_index = 0
 
 
@@ -45,14 +45,10 @@ class Submarine:
 
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
+        self.tracking_index += 1
 
         if (len(self.focus) > 0) & (self.return_fun == False):
 
-            if self.focus[0].name == self.prev_focus:
-                self.tracking_timer[self.tracking_index] += 1
-            else:
-                self.tracking_index += 1
-                self.tracking_timer.append(0)
 
             if self.loc.dist_to(self.focus[0].loc) > 20000/2000:
                 # Within detection range, not within tracking range
@@ -70,6 +66,7 @@ class Submarine:
                 if self.focus[0].name != self.prev_focus:
                     self.descriminating_timer = 5*60
                     self.prev_focus = self.focus[0].name
+                    self.tracking_timer.append(self.tracking_index)
 
                 if self.descriminating_timer < 0:
                     if self.focus[0].status != 'Target':
@@ -77,8 +74,6 @@ class Submarine:
                         self.detections.pop(0)
                         self.friends.append(self.focus[0])
                         self.crs = rand.randint(0, 1)*180
-                        self.tracking_index += 1
-                        self.tracking_timer.append(0)
 
 
                     elif (self.focus[0].status == 'Target'):
@@ -91,8 +86,6 @@ class Submarine:
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
-                                self.tracking_index += 1
-                                self.tracking_timer.append(0)
 
                             else:
                                 self.torp_timer = 1*60
@@ -116,6 +109,10 @@ class Submarine:
             if (len(self.focus) == 0):
                 self.return_fun = True
                 self.crs = 270
+        if self.loc.lon <= (90 + (self.indexer - 1)*200):
+            if (len(self.focus) == 0):
+                self.return_fun = True
+                self.crs = 90
         if ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
