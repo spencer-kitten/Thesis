@@ -113,7 +113,7 @@ class Submarine:
             if (len(self.focus) == 0):
                 self.return_fun = True
                 self.crs = 90
-        if ((85 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)) & (self.return_fun == True):
+        if ((95 + (self.indexer - 1)*200) < self.loc.lon < (105 + (self.indexer - 1)*200)) & (self.return_fun == True):
             self.return_fun = False
             self.crs = rand.randint(0, 1)*180
         if self.loc.lat >= 100:
@@ -144,7 +144,7 @@ class Submarine:
 
         for targets in target_list:
             if targets.alive == True:
-                if (targets.loc.lon <= 190 + (self.indexer - 1)*200) & (targets.loc.lon >= (self.indexer - 1)*200):
+                if (targets.loc.lon <= 190 + (self.indexer - 1)*200) & (targets.loc.lon >= (self.indexer - 1)*200) & (targets.loc.lat <= 100) & (targets.loc.lat >= 0):
                     distance = self.loc.dist_to(targets.loc)
                     if (distance < ping_range):
                         if (targets in self.friends) or (targets.alive == False):

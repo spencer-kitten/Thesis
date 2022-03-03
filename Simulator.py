@@ -168,6 +168,8 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             plotter_index = 0
             if plotter == True:
                 contact_picture(Targets,Merchants,Submarines,len(Submarines))
+                titlestring = str(n_submarines) +' Submarines, Seed = ' + str(seed)
+                plt.title(titlestring)
                 filename = f'{i}.png'
                 i += 1
                 filenames.append(filename)
