@@ -2,7 +2,7 @@
 from Simulator import *
 import sys
 
-def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots = False, gif = False, tweet = False):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target,plots = True, gif = True, tweet = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 
@@ -20,7 +20,7 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,plots 
         global Merchants
         global Submarines
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,12,5e5,plots,gif,seeds)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,Lam_T,Lam_M,speed_target,5e4,seeds,plots,gif)
 
         Killed_Targets = {}
         for sub in Submarines:
@@ -56,4 +56,9 @@ if __name__ == '__main__':
     n_submarines = int(sys.argv[4])
     seed = int(sys.argv[5])
     max_samples = int(sys.argv[6])
-    RUN(job_num,n_targets,n_merchants,n_submarines,seed,max_samples)
+    speed_sub = int(sys.argv[7])
+    P_k = float(sys.argv[8])
+    Lam_T = int(sys.argv[9])
+    Lam_M = int(sys.argv[10])
+    speed_target = int(sys.argv[11])
+    RUN(job_num, n_targets, n_merchants, n_submarines, seed, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target)

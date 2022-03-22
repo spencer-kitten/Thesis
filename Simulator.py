@@ -20,7 +20,7 @@ from Submarine import *
 from Merchant_Ship import Merchant_Ship
 from twitter_acces import *
 
-def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = []):
+def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [], Merchants = []):
     '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
     # Target name builder
@@ -54,7 +54,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = 
     # Merchant builder
     time_delay = 0
     for j in merch_names:
-        Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay))
+        Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay,tgt_speed))
         time_delay += py.random.exponential(1/ld_m)
 
     # Submarine name builder
@@ -69,7 +69,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub, Targets = [], Merchants = 
     for i in sub_names:
         location = Coord(random.uniform(0,100),100 + 200*(indexer-1))
         course = round(random.random())*180
-        Submarines.append(Submarine(location,crs = course, spd = speed_sub, index = indexer))
+        Submarines.append(Submarine(location,P_k,crs = course, spd = speed_sub, index = indexer))
         indexer += 1
 
     return Targets,Merchants,Submarines
@@ -93,14 +93,14 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
     plt.ylim(0,100)
     #plt.axis('equal')
 
-def Pois(arrival_timer,Targets, Merchants):
+def Pois(arrival_timer,Targets, Merchants,P_k,tgt_speed):
 
     if arrival_timer <= 0:
         RV = py.random.random()
         if RV < (ld_t/(ld_t + ld_m)):
-            Targets, Merchants, Submarines = generate_objects(0,1,0,0)
+            Targets, Merchants, Submarines = generate_objects(0,1,0,0,P_k,tgt_speed)
         else:
-            Targets, Merchants, Submarines = generate_objects(1,0,0,0)
+            Targets, Merchants, Submarines = generate_objects(1,0,0,0,P_k,tgt_speed)
         arrival_timer = py.random.exponential(1/(ld_m + ld_t))
 
     else:
@@ -109,14 +109,13 @@ def Pois(arrival_timer,Targets, Merchants):
     return Targets, Merchants, arrival_timer
 
 
-def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = True,gif = True,seed = 10):
+def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_speed,max_time,seed, plotter = True,gif = True):
     #Print RNG seed for output... be able to recreate
-
     # Lambda for interarrival target & merchant
     global ld_t
     global ld_m
-    ld_t = 1/(24*3600)
-    ld_m = 10/(24*3600)
+    ld_t = lad_t*1/(24*3600)
+    ld_m = lad_m*1/(24*3600)
 
     Simulation_Stop = False
 
@@ -125,7 +124,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
     py.random.seed(seed)
 
     # Generate enviroment objects
-    Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub)
+    Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub,P_k,tgt_speed)
 
     # Working indexes
     plotter_index = 0
@@ -159,7 +158,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             # Move target
             item_t.update_position()
 
-        Targets, Merchants, arrival_timer = Pois(arrival_timer,Targets, Merchants)
+        Targets, Merchants, arrival_timer = Pois(arrival_timer,Targets, Merchants,P_k,tgt_speed)
 
         plotter_index += 1
 
@@ -168,7 +167,7 @@ def Simulator(n_targets,n_merchants,n_submarines,speed_sub,max_time, plotter = T
             plotter_index = 0
             if plotter == True:
                 contact_picture(Targets,Merchants,Submarines,len(Submarines))
-                titlestring = str(n_submarines) +' Submarines, Seed = ' + str(seed)
+                titlestring = str(n_submarines) +' Submarine(s), Seed = ' + str(seed) + r'$, P_{k} = $' + str(P_k) + r'$, \lambda_{T} = $' + str('{:0.3e}'.format(ld_t*24*3600)) + 'Arrivals/Day'
                 plt.title(titlestring)
                 filename = f'{i}.png'
                 i += 1

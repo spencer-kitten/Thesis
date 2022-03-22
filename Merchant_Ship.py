@@ -22,7 +22,7 @@ class Merchant_Ship:
     '''Improved class to store Merchant Ship data'''
 
 
-    def __init__(self, name, loc, time_delay,course = 90, speed=16):
+    def __init__(self, name, loc, time_delay,speed = 16, course = 90):
         self.name = name
         self.loc = loc
         self.spd = speed

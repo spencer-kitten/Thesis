@@ -19,7 +19,7 @@ from Coord import *
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
 
-    def __init__(self,loc, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1):
+    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1):
         self.loc = loc
         self.crs = crs
         self.spd = spd
@@ -32,11 +32,12 @@ class Submarine:
         self.friends = []
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
-        self.descriminating_timer = 5*60
+        self.descriminating_timer = 20*60
         self.torp_timer = 1*60
         self.indexer = index
         self.kills = []
-        self.tracking_timer = []
+        self.kill_prob = P_k
+        self.tracking_timer = [0]
         self.tracking_index = 0
 
 
@@ -45,7 +46,7 @@ class Submarine:
 
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
-        self.tracking_index += 1
+
 
         if (len(self.focus) > 0) & (self.return_fun == False):
 
@@ -64,9 +65,9 @@ class Submarine:
 
                 # Check if new target
                 if self.focus[0].name != self.prev_focus:
-                    self.descriminating_timer = 5*60
+                    self.descriminating_timer = 20*60
                     self.prev_focus = self.focus[0].name
-                    self.tracking_timer.append(self.tracking_index)
+
 
                 if self.descriminating_timer < 0:
                     if self.focus[0].status != 'Target':
@@ -80,15 +81,17 @@ class Submarine:
                         self.torp_timer -= 1
 
                         if self.torp_timer <= 0:
-                            if rand.random() < 0.7:
+                            shoot = rand.random()
+                            #print(shoot,self.kill_prob)
+                            if shoot < self.kill_prob:
                                 self.focus[0].alive = False
-                                self.torp_timer = 1*60
+                                self.torp_timer = 5*60
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
 
                             else:
-                                self.torp_timer = 1*60
+                                self.torp_timer = 5*60
                 else:
                     self.descriminating_timer -= 1
         elif (len(self.focus) == 0) & (self.return_fun == False):
@@ -147,7 +150,7 @@ class Submarine:
                 if (targets.loc.lon <= 190 + (self.indexer - 1)*200) & (targets.loc.lon >= (self.indexer - 1)*200) & (targets.loc.lat <= 100) & (targets.loc.lat >= 0):
                     distance = self.loc.dist_to(targets.loc)
                     if (distance < ping_range):
-                        if (targets in self.friends) or (targets.alive == False):
+                        if (targets in self.friends):
                             continue
 
                         if distance < min_dist:
@@ -164,6 +167,14 @@ class Submarine:
         except:
             self.focus = []
 
+        self.tracking_timer[self.tracking_index] += 1
+
+        try:
+            if self.focus[0].name != self.prev_focus:
+                self.tracking_index += 1
+                self.tracking_timer.append(0)
+        except:
+            pass
 
     def bearing_to_rads(self, crs):
         '''Converts nautical bearing to unit circle radians'''
