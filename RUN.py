@@ -2,7 +2,7 @@
 from Simulator import *
 import sys
 
-def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target,plots = True, gif = True, tweet = False):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target,plots = False, gif = False, tweet = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 
@@ -24,10 +24,18 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_
 
         Killed_Targets = {}
         for sub in Submarines:
-            Killed_Targets[str(sub.indexer) + ' kills'] = len(sub.kills)
-            Killed_Targets[str(sub.indexer) + ' tracking'] = py.mean(sub.tracking_timer)
+            Killed_Targets[str(sub.indexer) + ' kills'] = [len(sub.kills) for i in range(len(sub.tracking_timer))]
+            Killed_Targets[str(sub.indexer) + ' tracking'] = sub.tracking_timer
 
-        Killed_Targets = pd.DataFrame(Killed_Targets, index = [0])
+        row_lengths = []
+        for row in Killed_Targets.values():
+            row_lengths.append(len(row))
+        max_length = max(row_lengths)
+        for row in Killed_Targets.values():
+            while len(row) < max_length:
+                row.append(0)
+
+        Killed_Targets = pd.DataFrame(Killed_Targets)
         Killed_Targets.to_csv(filename, mode = 'a')
         seeds += 1
         run += 1

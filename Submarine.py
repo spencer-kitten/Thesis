@@ -38,7 +38,6 @@ class Submarine:
         self.kills = []
         self.kill_prob = P_k
         self.tracking_timer = [0]
-        self.tracking_index = 0
 
 
     def update_position(self):
@@ -67,6 +66,7 @@ class Submarine:
                 if self.focus[0].name != self.prev_focus:
                     self.descriminating_timer = 20*60
                     self.prev_focus = self.focus[0].name
+                    self.tracking_timer.append(0)
 
 
                 if self.descriminating_timer < 0:
@@ -167,14 +167,8 @@ class Submarine:
         except:
             self.focus = []
 
-        self.tracking_timer[self.tracking_index] += 1
+        self.tracking_timer[-1] += 1
 
-        try:
-            if self.focus[0].name != self.prev_focus:
-                self.tracking_index += 1
-                self.tracking_timer.append(0)
-        except:
-            pass
 
     def bearing_to_rads(self, crs):
         '''Converts nautical bearing to unit circle radians'''
