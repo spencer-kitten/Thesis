@@ -41,21 +41,22 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [],
         time_delay += py.random.exponential(1/ld_t)
 
     # Merchant name builder
-    try:
-        starting_int = Merchants[-1].name
-        starting_int = int(starting_int[-1])
-    except:
-        starting_int = 0
-    merch_name = 'Merchant_'
-    merch_names = []
-    for i in range(starting_int + 1,n_merch+starting_int+1):
-        merch_names.append(merch_name + str(i))
+    if (n_merch != 0) and (ld_m != 0):
+        try:
+            starting_int = Merchants[-1].name
+            starting_int = int(starting_int[-1])
+        except:
+            starting_int = 0
+        merch_name = 'Merchant_'
+        merch_names = []
+        for i in range(starting_int + 1,n_merch+starting_int+1):
+            merch_names.append(merch_name + str(i))
 
-    # Merchant builder
-    time_delay = 0
-    for j in merch_names:
-        Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay,tgt_speed))
-        time_delay += py.random.exponential(1/ld_m)
+        # Merchant builder
+        time_delay = 0
+        for j in merch_names:
+            Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay,tgt_speed))
+            time_delay += py.random.exponential(1/ld_m)
 
     # Submarine name builder
     sub_name = 'Hunter_'
