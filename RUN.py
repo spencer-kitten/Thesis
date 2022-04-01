@@ -20,7 +20,7 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_
         global Merchants
         global Submarines
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,Lam_T,Lam_M,speed_target,5e4,seeds,plots,gif)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,Lam_T,Lam_M,speed_target,5e6,seeds,plots,gif)
 
         Killed_Targets = {}
         for sub in Submarines:
