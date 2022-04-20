@@ -24,6 +24,8 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_
 
         Killed_Targets = {}
         for sub in Submarines:
+            #Killed_Targets[str(sub.indexer) + ' kills'] =
+            #Killed_Targets[str(sub.indexer) + ' tracking'] = sub.tracking_timer
             Killed_Targets[str(sub.indexer) + ' kills'] = [len(sub.kills) for i in range(len(sub.tracking_timer))]
             Killed_Targets[str(sub.indexer) + ' tracking'] = sub.tracking_timer
 
