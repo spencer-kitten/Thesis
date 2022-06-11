@@ -1,0 +1,5 @@
+1. NOLHdesigns_v6
+2. NOLH 11 factors 
+3. merge settings in excel 
+4. save as space seperated file 
+5. open in notepad and save as .dat "all files"
