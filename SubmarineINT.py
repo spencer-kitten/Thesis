@@ -32,7 +32,7 @@ class Submarine:
         self.friends = []
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
-        self.descriminating_timer = 20*60
+        self.descriminating_timer = 2*60*60
         self.torp_timer = 10*60
         self.indexer = index
         self.kills = []

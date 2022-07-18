@@ -154,7 +154,8 @@ def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_s
             item_s.ping(target_list)
             #Update cloud
             if len(item_s.alert_list) > 0:
-                Communication[0].update_data(item_s,max_timer)
+                if item_s.alert_list[0].alive == True:
+                    Communication[0].update_data(item_s,max_timer)
                 item_s.alert_list = []
             # Move sumbarine
             if item_s.interdict == False:
