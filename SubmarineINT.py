@@ -33,19 +33,61 @@ class Submarine:
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
         self.descriminating_timer = 20*60
-        self.torp_timer = 1*60
+        self.torp_timer = 10*60
         self.indexer = index
         self.kills = []
         self.kill_prob = P_k
         self.tracking_timer = [0]
+        #interdiciton
+        self.alert_list = []
+        self.interdict = False
+        self.last_interdict = 0
+        #self.interdiction_point = Coord(0,0)
+
+    def comms_check(self,communications_list):
+
+        try:
+            last_known_tgt_position = self.loc.bearing(communications_list[0].target_info[self.indexer - 1][0])
+            #perform calc to optimal update_position
+            #set course
+            if self.last_interdict != communications_list[0].target_info[self.indexer - 1][0]:
+                self.last_interdict = communications_list[0].target_info[self.indexer - 1][0]
+                self.interdict = True
+
+        except:
+            pass
 
 
-    def update_position(self):
-        '''Geometric Hops'''
+    def interdiction(self,communications_list):
+
+        if (self.loc.lat + 1 > communications_list[0].target_info[self.indexer - 1][0].lat) & (self.loc.lat - 1 < communications_list[0].target_info[self.indexer - 1][0].lat):
+            if len(self.focus) > 0:
+                self.interdict = False
+        else:
+            self.crs = self.loc.bearing(Coord(communications_list[0].target_info[self.indexer - 1][0].lat,self.loc.lon))
+
+        if self.loc.lon >= (190 + (self.indexer - 1)*200):
+            self.crs = 270
+        if self.loc.lon <=  (self.indexer - 1)*200:
+            self.crs = 90
+        if self.loc.lat >= 100:
+            self.crs = 180
+        elif self.loc.lat <= 0:
+            self.crs = 0
+
 
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
 
+        # Geometric hops
+        updated_lat = self.loc.lat + math.sin(radians)*d
+        updated_lon = self.loc.lon + math.cos(radians)*d
+
+        # Re-store location as Coord object in .loc
+        self.loc = Coord(updated_lat,updated_lon)
+
+    def update_position(self):
+        '''Geometric Hops'''
 
         if (len(self.focus) > 0) & (self.return_fun == False):
 
@@ -142,6 +184,11 @@ class Submarine:
         ping_range = 40000/2000
         min_dist  = 999999
 
+        try:
+            if (self.focus[0].loc.lon >= (190 + (self.indexer - 1)*200)) & (self.focus[0] not in self.alert_list):
+                self.alert_list.append(self.focus[0])
+        except:
+            pass
         self.detections = []
         self.focus = []
 
