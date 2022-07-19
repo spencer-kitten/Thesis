@@ -46,6 +46,7 @@ class Submarine:
         #self.interdiction_point = Coord(0,0)
 
     def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed):
+        self.spd = 30
         bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,last_known_tgt_position.lon))
         beta = 90 - last_known_tgt_position.bearing(self.loc)
         if beta >= 180:
@@ -71,6 +72,7 @@ class Submarine:
 
         if optimal_lon >= (190 + (self.indexer - 1)*200):
             self.interdict = False
+            self.alert_list = communications_list[0].target_info[self.indexer - 1]
             return
         elif optimal_lon <=  (self.indexer - 1)*200:
             optimal_lon = (self.indexer - 1)*200
@@ -78,10 +80,17 @@ class Submarine:
 
         return Coord(optimal_lat,optimal_lon)
 
-    def retreating_barrier_search(self):
-        # needs to bounce back and fourth until tgt shows up, then retreats
-        # generate a bunch of dots and increment which one its going to, use rbs index
+    def retreating_barrier_search(self,communications_list):
         self.spd = 0
+        # needs to bounce back and fourth until tgt shows up, then retreats
+        last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
+        last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
+        target_speed  = communications_list[0].target_info[self.indexer - 1][2]
+
+        theta = 0
+        # generate a bunch of dots and increment which one its going to, use rbs index
+
+
 
     def comms_check(self,communications_list):
         if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
@@ -94,8 +103,10 @@ class Submarine:
                 self.last_interdict.pop(0)
                 self.last_interdict.append(last_known_tgt_position)
                 self.interdict = True
-                self.crs = self.loc.bearing(self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed))
-
+                try:
+                    self.crs = self.loc.bearing(self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed))
+                except:
+                    pass
 
     def interdiction(self,communications_list):
 
@@ -107,7 +118,7 @@ class Submarine:
         else:
             #intercept
             pass
-            #self.crs = self.loc.bearing(Coord(communications_list[0].target_info[self.indexer - 1][0].loc.lat,self.loc.lon))
+
 
         if self.loc.lon >= (190 + (self.indexer - 1)*200):
             self.crs = 270
