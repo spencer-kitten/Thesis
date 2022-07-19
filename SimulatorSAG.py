@@ -26,7 +26,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [],
 
 
     # Target name builder
-    if (n_tgts != 0) and (ld_t != 0):
+    if (n_tgts != 0):
         try:
             starting_int = Targets[-1].name
             starting_int = int(starting_int[-1])
@@ -41,10 +41,11 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [],
         time_delay = 0
         for i in tgt_names:
             Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
-            time_delay += py.random.exponential(1/ld_t)
+            if ld_t != 0:
+                time_delay += py.random.exponential(1/ld_t)
 
     # Merchant name builder
-    if (n_merch != 0) and (ld_m != 0):
+    if (n_merch != 0):
         try:
             starting_int = Merchants[-1].name
             starting_int = int(starting_int[-1])
@@ -59,7 +60,8 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [],
         time_delay = 0
         for j in merch_names:
             Merchants.append(Merchant_Ship(j, Coord(random.uniform(0,100),0),time_delay,tgt_speed))
-            time_delay += py.random.exponential(1/ld_m)
+            if ld_m != 0:
+                time_delay += py.random.exponential(1/ld_m)
 
     # Submarine name builder
     sub_name = 'Hunter_'
@@ -99,16 +101,17 @@ def contact_picture(tgt_list,merch_list,sub_list,plot_lim = 1):
 
 def Pois(arrival_timer,Targets, Merchants,P_k,tgt_speed):
 
-    if arrival_timer <= 0:
-        RV = py.random.random()
-        if RV < (ld_t/(ld_t + ld_m)):
-            Targets, Merchants, Submarines = generate_objects(0,1,0,0,P_k,tgt_speed)
-        else:
-            Targets, Merchants, Submarines = generate_objects(1,0,0,0,P_k,tgt_speed)
-        arrival_timer = py.random.exponential(1/(ld_m + ld_t))
+    if (ld_t + ld_m) > 0:
+        if arrival_timer <= 0:
+            RV = py.random.random()
+            if RV < (ld_t/(ld_t + ld_m)):
+                Targets, Merchants, Submarines = generate_objects(0,1,0,0,P_k,tgt_speed)
+            else:
+                Targets, Merchants, Submarines = generate_objects(1,0,0,0,P_k,tgt_speed)
+            arrival_timer = py.random.exponential(1/(ld_m + ld_t))
 
-    else:
-        arrival_timer -= 1
+        else:
+            arrival_timer -= 1
 
     return Targets, Merchants, arrival_timer
 

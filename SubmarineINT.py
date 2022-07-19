@@ -41,21 +41,60 @@ class Submarine:
         #interdiciton
         self.alert_list = []
         self.interdict = False
-        self.last_interdict = 0
+        self.last_interdict = [0]
+        self.rbs = 0
         #self.interdiction_point = Coord(0,0)
 
-    def comms_check(self,communications_list):
+    def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed):
+        bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,self.loc.lon))
+        beta = last_known_tgt_position.bearing(self.loc)
+        if beta >= 180:
+            beta = 360-beta
 
-        try:
-            last_known_tgt_position = self.loc.bearing(communications_list[0].target_info[self.indexer - 1][0])
+        alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)
+
+        if last_known_tgt_position.lat >= self.loc.lat:
+            self.crs = bearing_to_tgt - alpha
+        else:
+            self.crs = bearing_to_tgt + alpha
+
+        radians = self.bearing_to_rads(self.crs)
+        d = self.spd*(1/3600)
+
+        optimal_lat = self.loc.lat + math.sin(radians)*d
+        optimal_lon = self.loc.lon + math.cos(radians)*d
+        # three different circumstances
+        #1. meet at wall
+        #2. too far ... if too far then ignore comms check
+        #3. go get em
+
+        if optimal_lon >= (190 + (self.indexer - 1)*200):
+            self.interdict = False
+            return
+        elif optimal_lon <=  (self.indexer - 1)*200:
+            optimal_lon = (self.indexer - 1)*200
+
+        print(Coord(optimal_lat,optimal_lon))
+        return Coord(optimal_lat,optimal_lon)
+
+    def retreating_barrier_search(self):
+        # needs to bounce back and fourth until tgt shows up, then retreats
+        # generate a bunch of dots and increment which one its going to, use rbs index
+        pass
+
+    def comms_check(self,communications_list):
+        if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
+            last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
+            last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
+            target_speed  = communications_list[0].target_info[self.indexer - 1][2]
             #perform calc to optimal update_position
             #set course
-            if self.last_interdict != communications_list[0].target_info[self.indexer - 1][0]:
-                self.last_interdict = communications_list[0].target_info[self.indexer - 1][0]
+            if self.last_interdict[0] != last_known_tgt_position:
+                self.last_interdict.pop(0)
+                self.last_interdict.append(last_known_tgt_position)
                 self.interdict = True
-
-        except:
-            pass
+                self.crs = self.loc.bearing(self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed))
+                self.spd = 30
 
 
     def interdiction(self,communications_list):
@@ -63,8 +102,12 @@ class Submarine:
         if (self.loc.lat + 1 > communications_list[0].target_info[self.indexer - 1][0].lat) & (self.loc.lat - 1 < communications_list[0].target_info[self.indexer - 1][0].lat):
             if len(self.focus) > 0:
                 self.interdict = False
+            else:
+                self.retreating_barrier_search()
         else:
-            self.crs = self.loc.bearing(Coord(communications_list[0].target_info[self.indexer - 1][0].lat,self.loc.lon))
+            #intercept
+            pass
+            #self.crs = self.loc.bearing(Coord(communications_list[0].target_info[self.indexer - 1][0].loc.lat,self.loc.lon))
 
         if self.loc.lon >= (190 + (self.indexer - 1)*200):
             self.crs = 270
@@ -96,7 +139,7 @@ class Submarine:
                 # Within detection range, not within tracking range
                 # Speed up to close distance
                 self.crs = self.loc.bearing(self.focus[0].loc)
-                self.spd = 33
+                self.spd = 30
 
 
             elif (self.loc.dist_to(self.focus[0].loc) <= 20000/2000):
@@ -106,7 +149,7 @@ class Submarine:
 
                 # Check if new target
                 if self.focus[0].name != self.prev_focus:
-                    self.descriminating_timer = 20*60
+                    self.descriminating_timer = 2*60*60
                     self.prev_focus = self.focus[0].name
                     self.tracking_timer.append(0)
 
@@ -127,13 +170,13 @@ class Submarine:
                             #print(shoot,self.kill_prob)
                             if shoot < self.kill_prob:
                                 self.focus[0].alive = False
-                                self.torp_timer = 5*60
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
 
-                            else:
-                                self.torp_timer = 5*60
+                            self.torp_timer = 10*60
+
+                    self.descriminating_timer = 2*60*60
                 else:
                     self.descriminating_timer -= 1
         elif (len(self.focus) == 0) & (self.return_fun == False):
