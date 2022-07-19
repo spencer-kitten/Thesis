@@ -46,17 +46,17 @@ class Submarine:
         #self.interdiction_point = Coord(0,0)
 
     def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed):
-        bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,self.loc.lon))
-        beta = last_known_tgt_position.bearing(self.loc)
+        bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,last_known_tgt_position.lon))
+        beta = 90 - last_known_tgt_position.bearing(self.loc)
         if beta >= 180:
             beta = 360-beta
-
-        alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)
+        beta = beta*np.pi/180
+        alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)*180/np.pi
 
         if last_known_tgt_position.lat >= self.loc.lat:
-            self.crs = bearing_to_tgt - alpha
-        else:
             self.crs = bearing_to_tgt + alpha
+        else:
+            self.crs = bearing_to_tgt - alpha
 
         radians = self.bearing_to_rads(self.crs)
         d = self.spd*(1/3600)
@@ -68,19 +68,20 @@ class Submarine:
         #2. too far ... if too far then ignore comms check
         #3. go get em
 
+
         if optimal_lon >= (190 + (self.indexer - 1)*200):
             self.interdict = False
             return
         elif optimal_lon <=  (self.indexer - 1)*200:
             optimal_lon = (self.indexer - 1)*200
 
-        print(Coord(optimal_lat,optimal_lon))
+
         return Coord(optimal_lat,optimal_lon)
 
     def retreating_barrier_search(self):
         # needs to bounce back and fourth until tgt shows up, then retreats
         # generate a bunch of dots and increment which one its going to, use rbs index
-        pass
+        self.spd = 0
 
     def comms_check(self,communications_list):
         if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
@@ -94,7 +95,6 @@ class Submarine:
                 self.last_interdict.append(last_known_tgt_position)
                 self.interdict = True
                 self.crs = self.loc.bearing(self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed))
-                self.spd = 30
 
 
     def interdiction(self,communications_list):
