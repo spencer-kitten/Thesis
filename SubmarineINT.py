@@ -19,7 +19,7 @@ from Coord import *
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
 
-    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1,comms = 1):
+    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1,comms = 2):
         self.loc = loc
         self.crs = crs
         self.spd = spd
@@ -47,18 +47,17 @@ class Submarine:
         if comms == 1:
             self.communication_timer = 0
         elif comms == 2:
-            self.communication_timer = random.rand(0,12*60*60)
+            self.communication_timer = rand.rand(0,10*60*60)
         elif comms == 3:
             self.communication_timer = 1e10
         #self.interdiction_point = Coord(0,0)
 
-    def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed):
+    def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed,max_timer):
         self.spd = 30
+        last_known_tgt_position.lon = last_known_tgt_position.lon + target_speed*(max_timer-last_known_tgt_time)
         bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,last_known_tgt_position.lon))
-
-
         if last_known_tgt_position.lat >= self.loc.lat:
-            beta = last_known_tgt_position.bearing(self.loc) - 270
+            beta = last_known_tgt_position.bearing(self.loc) - 90
             if beta >= 180:
                 beta = 360-beta
             beta = beta*np.pi/180
@@ -73,15 +72,13 @@ class Submarine:
             self.crs = bearing_to_tgt - alpha
 
         radians = self.bearing_to_rads(self.crs)
-        d = self.spd*(1/3600)
-
-        optimal_lat = self.loc.lat + math.sin(radians)*d
-        optimal_lon = self.loc.lon + math.cos(radians)*d
+        time_to_interdict = self.loc.dist_to(last_known_tgt_position)*np.sin(beta)/(np.sin(np.pi-alpha*np.pi/180-beta)*self.spd)
+        optimal_lat = last_known_tgt_position.lat
+        optimal_lon = last_known_tgt_position.lon + target_speed*time_to_interdict
         # three different circumstances
         #1. meet at wall
         #2. too far ... if too far then ignore comms check
         #3. go get em
-
 
         if optimal_lon >= (190 + (self.indexer - 1)*200):
             self.interdict = False
@@ -89,36 +86,34 @@ class Submarine:
             return
         elif optimal_lon <=  (self.indexer - 1)*200:
             optimal_lon = (self.indexer - 1)*200
-
-
         return Coord(optimal_lat,optimal_lon)
 
 
 
-    def comms_check(self,communications_list):
-        #if self.communication_index > self.communication_timer:
-        #    self.communication_index = 0
-        if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
-            last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
-            last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
-            target_speed  = communications_list[0].target_info[self.indexer - 1][2]
-            #perform calc to optimal update_position
-            #set course
-            if self.last_interdict[0] != last_known_tgt_position:
-                self.last_interdict.pop(0)
-                self.last_interdict.append(last_known_tgt_position)
-                self.interdict = True
-                try:
-                    self.IP = self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed)
-                    self.crs = self.loc.bearing(self.IP)
-                except:
-                    pass
-        #self.communication_index += 1
+    def comms_check(self,communications_list,max_timer):
+        if self.communication_index > self.communication_timer:
+            self.communication_index = 0
+            if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
+                last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
+                last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
+                target_speed  = communications_list[0].target_info[self.indexer - 1][2]
+                #perform calc to optimal update_position
+                #set course
+                if self.last_interdict[0] != last_known_tgt_position:
+                    self.last_interdict.pop(0)
+                    self.last_interdict.append(last_known_tgt_position)
+                    self.interdict = True
+                    try:
+                        self.IP = self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed,max_timer)
+                        self.crs = self.loc.bearing(self.IP)
+                    except:
+                        pass
+        self.communication_index += 1
 
 
     def interdiction(self,communications_list):
 
-        if self.loc.dist_to(self.IP) < 3:
+        if self.loc.dist_to(self.IP) < 1:
             self.interdict = False
 
         else:

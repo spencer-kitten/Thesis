@@ -146,7 +146,7 @@ def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_s
     # Lambda for interarrival target & merchant
 
     Communication = [COMMS()]
-
+    global max_timer
     global ld_t
     global ld_m
     ld_t = lad_t*1/(24*3600)
@@ -195,7 +195,7 @@ def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_s
             # Move sumbarine
             if item_s.interdict == False:
                 item_s.update_position()
-                item_s.comms_check(Communication)
+                item_s.comms_check(Communication,max_timer)
             else:
                 item_s.interdiction(Communication)
 
