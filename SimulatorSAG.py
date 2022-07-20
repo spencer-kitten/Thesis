@@ -21,9 +21,34 @@ from Merchant_Ship import Merchant_Ship
 from twitter_acces import *
 from COMMS import *
 
-def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [], Merchants = []):
-    '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
+def generate_SAG(sag_speed,dt):
 
+    Targets = []
+    dt = dt/30
+    n_tgts = 6
+    try:
+        starting_int = Targets[-1].name
+        starting_int = int(starting_int[-1])
+    except:
+        starting_int = 0
+    tgt_name = 'Target_'
+    tgt_names = []
+    for i in range(starting_int+ 1,n_tgts+starting_int+1):
+        tgt_names.append(tgt_name + str(i))
+
+    # Target builder
+    j = 0
+    offset = random.uniform(10,90)
+    positions = [(offset,5*np.sqrt(3)),(offset,10 + 5*np.sqrt(3)),(offset + 5*np.sqrt(3),5 + 5*np.sqrt(3)),(offset + 5,0),(offset-5,0),(offset-5*np.sqrt(3),5+5*np.sqrt(3))]
+    for i in tgt_names:
+        Targets.append(Merchant_Ship(i, Coord(positions[j][0],positions[j][1]),dt,speed = sag_speed))
+        j += 1
+
+
+    return Targets
+
+def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets,Merchants):
+    '''Generates a requested number of merchants, targets, and submarines. Submarine speed may be specified.'''
 
     # Target name builder
     if (n_tgts != 0):
@@ -40,7 +65,7 @@ def generate_objects(n_merch,n_tgts,n_subs,speed_sub,P_k,tgt_speed,Targets = [],
         # Target builder
         time_delay = 0
         for i in tgt_names:
-            Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay))
+            Targets.append(Merchant_Ship(i, Coord(random.uniform(0,100),0),time_delay,tgt_speed))
             if ld_t != 0:
                 time_delay += py.random.exponential(1/ld_t)
 
@@ -105,9 +130,9 @@ def Pois(arrival_timer,Targets, Merchants,P_k,tgt_speed):
         if arrival_timer <= 0:
             RV = py.random.random()
             if RV < (ld_t/(ld_t + ld_m)):
-                Targets, Merchants, Submarines = generate_objects(0,1,0,0,P_k,tgt_speed)
+                Targets, Merchants, Submarines = generate_objects(0,1,0,0,P_k,tgt_speed,Targets,Merchants)
             else:
-                Targets, Merchants, Submarines = generate_objects(1,0,0,0,P_k,tgt_speed)
+                Targets, Merchants, Submarines = generate_objects(1,0,0,0,P_k,tgt_speed,Targets,Merchants)
             arrival_timer = py.random.exponential(1/(ld_m + ld_t))
 
         else:
@@ -116,7 +141,7 @@ def Pois(arrival_timer,Targets, Merchants,P_k,tgt_speed):
     return Targets, Merchants, arrival_timer
 
 
-def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_speed,max_time,seed, plotter = True,gif = True):
+def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_speed,max_time,seed, plotter = True,gif = True,SAG = True):
     #Print RNG seed for output... be able to recreate
     # Lambda for interarrival target & merchant
 
@@ -133,8 +158,15 @@ def Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,lad_t,lad_m,tgt_s
     random.seed(seed)
     py.random.seed(seed)
 
+    Targets = []
+    Merchants = []
+
     # Generate enviroment objects
-    Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub,P_k,tgt_speed)
+    if SAG == False:
+        Targets, Merchants, Submarines = generate_objects(n_merchants,n_targets,n_submarines,speed_sub,P_k,tgt_speed,Targets,Merchants)
+    else:
+        Targets, Merchants, Submarines = generate_objects(n_merchants,0,n_submarines,speed_sub,P_k,tgt_speed,Targets,Merchants)
+        Targets = generate_SAG(tgt_speed,max_time)
 
     # Working indexes
     plotter_index = 0

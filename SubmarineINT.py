@@ -19,7 +19,7 @@ from Coord import *
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
 
-    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1):
+    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1,comms = 1):
         self.loc = loc
         self.crs = crs
         self.spd = spd
@@ -42,21 +42,34 @@ class Submarine:
         self.alert_list = []
         self.interdict = False
         self.last_interdict = [0]
-        self.rbs = 0
+        self.IP = 0
+        self.communication_index = 0
+        if comms == 1:
+            self.communication_timer = 0
+        elif comms == 2:
+            self.communication_timer = random.rand(0,12*60*60)
+        elif comms == 3:
+            self.communication_timer = 1e10
         #self.interdiction_point = Coord(0,0)
 
     def calc_interdiction_point(self,last_known_tgt_position,last_known_tgt_time,target_speed):
         self.spd = 30
         bearing_to_tgt = self.loc.bearing(Coord(last_known_tgt_position.lat,last_known_tgt_position.lon))
-        beta = 90 - last_known_tgt_position.bearing(self.loc)
-        if beta >= 180:
-            beta = 360-beta
-        beta = beta*np.pi/180
-        alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)*180/np.pi
+
 
         if last_known_tgt_position.lat >= self.loc.lat:
+            beta = last_known_tgt_position.bearing(self.loc) - 270
+            if beta >= 180:
+                beta = 360-beta
+            beta = beta*np.pi/180
+            alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)*180/np.pi
             self.crs = bearing_to_tgt + alpha
         else:
+            beta = 90 - last_known_tgt_position.bearing(self.loc)
+            if beta >= 180:
+                beta = 360-beta
+            beta = beta*np.pi/180
+            alpha = np.arcsin(target_speed*np.sin(beta)/self.spd)*180/np.pi
             self.crs = bearing_to_tgt - alpha
 
         radians = self.bearing_to_rads(self.crs)
@@ -80,19 +93,11 @@ class Submarine:
 
         return Coord(optimal_lat,optimal_lon)
 
-    def retreating_barrier_search(self,communications_list):
-        self.spd = 0
-        # needs to bounce back and fourth until tgt shows up, then retreats
-        last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
-        last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
-        target_speed  = communications_list[0].target_info[self.indexer - 1][2]
-
-        theta = 0
-        # generate a bunch of dots and increment which one its going to, use rbs index
-
 
 
     def comms_check(self,communications_list):
+        #if self.communication_index > self.communication_timer:
+        #    self.communication_index = 0
         if (self.indexer > 1) & ((self.indexer - 1) in communications_list[0].target_info.keys()):
             last_known_tgt_position = communications_list[0].target_info[self.indexer - 1][0]
             last_known_tgt_time = communications_list[0].target_info[self.indexer - 1][1]
@@ -104,17 +109,18 @@ class Submarine:
                 self.last_interdict.append(last_known_tgt_position)
                 self.interdict = True
                 try:
-                    self.crs = self.loc.bearing(self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed))
+                    self.IP = self.calc_interdiction_point(last_known_tgt_position,last_known_tgt_time,target_speed)
+                    self.crs = self.loc.bearing(self.IP)
                 except:
                     pass
+        #self.communication_index += 1
+
 
     def interdiction(self,communications_list):
 
-        if (self.loc.lat + 1 > communications_list[0].target_info[self.indexer - 1][0].lat) & (self.loc.lat - 1 < communications_list[0].target_info[self.indexer - 1][0].lat):
-            if len(self.focus) > 0:
-                self.interdict = False
-            else:
-                self.retreating_barrier_search()
+        if self.loc.dist_to(self.IP) < 3:
+            self.interdict = False
+
         else:
             #intercept
             pass
@@ -139,6 +145,8 @@ class Submarine:
 
         # Re-store location as Coord object in .loc
         self.loc = Coord(updated_lat,updated_lon)
+
+        #self.communication_index += 1
 
     def update_position(self):
         '''Geometric Hops'''
