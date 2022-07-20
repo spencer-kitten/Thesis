@@ -47,7 +47,7 @@ class Submarine:
         if comms == 1:
             self.communication_timer = 0
         elif comms == 2:
-            self.communication_timer = rand.rand(0,10*60*60)
+            self.communication_timer = np.random.random()*10*60*60
         elif comms == 3:
             self.communication_timer = 1e10
         #self.interdiction_point = Coord(0,0)
@@ -72,7 +72,8 @@ class Submarine:
             self.crs = bearing_to_tgt - alpha
 
         radians = self.bearing_to_rads(self.crs)
-        time_to_interdict = self.loc.dist_to(last_known_tgt_position)*np.sin(beta)/(np.sin(np.pi-alpha*np.pi/180-beta)*self.spd)
+        denom = (np.sin(np.pi-alpha*np.pi/180-beta)*self.spd) + 1e-4
+        time_to_interdict = self.loc.dist_to(last_known_tgt_position)*np.sin(beta)/denom
         optimal_lat = last_known_tgt_position.lat
         optimal_lon = last_known_tgt_position.lon + target_speed*time_to_interdict
         # three different circumstances
@@ -114,6 +115,7 @@ class Submarine:
     def interdiction(self,communications_list):
 
         if self.loc.dist_to(self.IP) < 1:
+            self.spd = 0
             self.interdict = False
 
         else:
