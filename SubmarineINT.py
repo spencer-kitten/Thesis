@@ -32,7 +32,7 @@ class Submarine:
         self.friends = []
         # Forces submarine to return to center postion to resume search if reach boundry
         self.return_fun = False
-        self.descriminating_timer = 2*60*60
+        self.descriminating_timer = 20*60
         self.torp_timer = 10*60
         self.indexer = index
         self.kills = []
@@ -176,6 +176,7 @@ class Submarine:
                         self.detections.pop(0)
                         self.friends.append(self.focus[0])
                         self.crs = rand.randint(0, 1)*180
+                        self.descriminating_timer = 20*60
 
 
                     elif (self.focus[0].status == 'Target'):
@@ -189,12 +190,12 @@ class Submarine:
                                 self.kills.append(self.focus[0].name)
                                 self.friends.append(self.focus[0])
                                 self.crs = rand.randint(0, 1)*180
+                                self.descriminating_timer = 20*60
 
                             self.torp_timer = 10*60
-
-                    self.descriminating_timer = 2*60*60
                 else:
                     self.descriminating_timer -= 1
+
         elif (len(self.focus) == 0) & (self.return_fun == False):
 
             self.spd = 12

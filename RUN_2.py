@@ -2,7 +2,7 @@
 from SimulatorSAG import *
 import sys
 
-def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target,plots = False, gif = False, tweet = False,SAG = True):
+def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_sub,P_k,Lam_T,Lam_M,speed_target,plots = False, gif = False, tweet = False,SAG = False):
     '''n_targets,n_merchants,n_submarines,seeds,max_samples,tweet = False
     files exported to Killed_Targets.csv'''
 
@@ -20,12 +20,10 @@ def RUN(job_num, n_targets, n_merchants, n_submarines, seeds, max_samples,speed_
         global Merchants
         global Submarines
 
-        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,Lam_T,Lam_M,speed_target,1e6,seeds,plots,gif,SAG)
+        Targets, Merchants, Submarines = Simulator(n_targets,n_merchants,n_submarines,P_k,speed_sub,Lam_T,Lam_M,speed_target,1e5,seeds,plots,gif,SAG)
 
         Killed_Targets = {}
         for sub in Submarines:
-            #Killed_Targets[str(sub.indexer) + ' kills'] =
-            #Killed_Targets[str(sub.indexer) + ' tracking'] = sub.tracking_timer
             Killed_Targets[str(sub.indexer) + ' kills'] = [len(sub.kills) for i in range(len(sub.tracking_timer))]
             Killed_Targets[str(sub.indexer) + ' tracking'] = sub.tracking_timer
 
