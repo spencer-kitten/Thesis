@@ -19,7 +19,7 @@ from Coord import *
 class Submarine:
     '''Improved class to store data of USS Lubbock'''
 
-    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1,comms = 2):
+    def __init__(self,loc,P_k, crs = rand.randrange(0, 360),spd = 3, depth = 150, index = 1,comms = 1):
         self.loc = loc
         self.crs = crs
         self.spd = spd
